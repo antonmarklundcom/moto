@@ -1,5 +1,6 @@
 import { relations, sql } from "drizzle-orm";
 import {
+  type AnyMySqlColumn,
   bigint,
   boolean,
   char,
@@ -48,7 +49,7 @@ export const users = mysqlTable(
     phoneE164: varchar("phone_e164", { length: 20 }),
     role: mysqlEnum("role", userRoleEnum).notNull().default("seller"),
     dealerId: bigint("dealer_id", { mode: "number", unsigned: true }).references(
-      (): any => dealers.id,
+      (): AnyMySqlColumn => dealers.id,
     ),
     isActive: boolean("is_active").notNull().default(true),
     lastLoginAt: datetime("last_login_at", { mode: "date" }),
@@ -76,7 +77,7 @@ export const dealers = mysqlTable(
     slug: varchar("slug", { length: 255 }).notNull(),
     cityId: bigint("city_id", { mode: "number", unsigned: true })
       .notNull()
-      .references((): any => cities.id),
+      .references((): AnyMySqlColumn => cities.id),
     address: varchar("address", { length: 300 }),
     phoneE164: varchar("phone_e164", { length: 20 }).notNull(),
     phoneRaw: varchar("phone_raw", { length: 30 }).notNull(),
@@ -149,11 +150,11 @@ export const models = mysqlTable(
     id: bigint("id", { mode: "number", unsigned: true }).autoincrement().primaryKey(),
     brandId: bigint("brand_id", { mode: "number", unsigned: true })
       .notNull()
-      .references((): any => brands.id),
+      .references((): AnyMySqlColumn => brands.id),
     name: varchar("name", { length: 150 }).notNull(),
     slug: varchar("slug", { length: 200 }).notNull(),
     categoryId: bigint("category_id", { mode: "number", unsigned: true }).references(
-      (): any => categories.id,
+      (): AnyMySqlColumn => categories.id,
     ),
     engineCc: smallint("engine_cc", { unsigned: true }),
     introHtml: text("intro_html"),
@@ -178,17 +179,17 @@ export const modelSuggestions = mysqlTable("model_suggestions", {
   id: bigint("id", { mode: "number", unsigned: true }).autoincrement().primaryKey(),
   rawText: varchar("raw_text", { length: 255 }).notNull(),
   brandId: bigint("brand_id", { mode: "number", unsigned: true }).references(
-    (): any => brands.id,
+    (): AnyMySqlColumn => brands.id,
   ),
   listingId: bigint("listing_id", { mode: "number", unsigned: true }).references(
-    (): any => listings.id,
+    (): AnyMySqlColumn => listings.id,
   ),
   status: mysqlEnum("status", modelSuggestionStatusEnum).notNull().default("pending"),
   mappedModelId: bigint("mapped_model_id", { mode: "number", unsigned: true }).references(
-    (): any => models.id,
+    (): AnyMySqlColumn => models.id,
   ),
   resolvedBy: bigint("resolved_by", { mode: "number", unsigned: true }).references(
-    (): any => users.id,
+    (): AnyMySqlColumn => users.id,
   ),
   ...timestamps,
 });
@@ -236,22 +237,22 @@ export const listings = mysqlTable(
     description: text("description"),
     brandId: bigint("brand_id", { mode: "number", unsigned: true })
       .notNull()
-      .references((): any => brands.id),
+      .references((): AnyMySqlColumn => brands.id),
     modelId: bigint("model_id", { mode: "number", unsigned: true }).references(
-      (): any => models.id,
+      (): AnyMySqlColumn => models.id,
     ),
     modelRaw: varchar("model_raw", { length: 255 }),
     categoryId: bigint("category_id", { mode: "number", unsigned: true })
       .notNull()
-      .references((): any => categories.id),
+      .references((): AnyMySqlColumn => categories.id),
     cityId: bigint("city_id", { mode: "number", unsigned: true })
       .notNull()
-      .references((): any => cities.id),
+      .references((): AnyMySqlColumn => cities.id),
     dealerId: bigint("dealer_id", { mode: "number", unsigned: true }).references(
-      (): any => dealers.id,
+      (): AnyMySqlColumn => dealers.id,
     ),
     ownerUserId: bigint("owner_user_id", { mode: "number", unsigned: true }).references(
-      (): any => users.id,
+      (): AnyMySqlColumn => users.id,
     ),
     condition: mysqlEnum("condition", listingConditionEnum).notNull(),
     year: smallint("year", { unsigned: true }),
@@ -280,7 +281,7 @@ export const listings = mysqlTable(
     whatsappClickCount: int("whatsapp_click_count", { unsigned: true }).notNull().default(0),
     submittedIp: varbinary("submitted_ip", { length: 16 }),
     updatedBy: bigint("updated_by", { mode: "number", unsigned: true }).references(
-      (): any => users.id,
+      (): AnyMySqlColumn => users.id,
     ),
     deletedAt: datetime("deleted_at", { mode: "date" }),
     ...timestamps,
@@ -314,7 +315,7 @@ export const listingImages = mysqlTable(
     id: bigint("id", { mode: "number", unsigned: true }).autoincrement().primaryKey(),
     listingId: bigint("listing_id", { mode: "number", unsigned: true })
       .notNull()
-      .references((): any => listings.id, { onDelete: "cascade" }),
+      .references((): AnyMySqlColumn => listings.id, { onDelete: "cascade" }),
     storagePath: varchar("storage_path", { length: 500 }).notNull(),
     width: smallint("width", { unsigned: true }),
     height: smallint("height", { unsigned: true }),
@@ -349,11 +350,11 @@ export const listingEvents = mysqlTable(
   {
     id: bigint("id", { mode: "number", unsigned: true }).autoincrement().primaryKey(),
     listingId: bigint("listing_id", { mode: "number", unsigned: true }).references(
-      (): any => listings.id,
+      (): AnyMySqlColumn => listings.id,
     ),
     eventType: mysqlEnum("event_type", listingEventTypeEnum).notNull(),
     dealerId: bigint("dealer_id", { mode: "number", unsigned: true }).references(
-      (): any => dealers.id,
+      (): AnyMySqlColumn => dealers.id,
     ),
     sessionHash: char("session_hash", { length: 64 }),
     ipHash: char("ip_hash", { length: 64 }),
@@ -399,10 +400,10 @@ export const leads = mysqlTable(
     id: bigint("id", { mode: "number", unsigned: true }).autoincrement().primaryKey(),
     type: mysqlEnum("type", leadTypeEnum).notNull(),
     listingId: bigint("listing_id", { mode: "number", unsigned: true }).references(
-      (): any => listings.id,
+      (): AnyMySqlColumn => listings.id,
     ),
     dealerId: bigint("dealer_id", { mode: "number", unsigned: true }).references(
-      (): any => dealers.id,
+      (): AnyMySqlColumn => dealers.id,
     ),
     name: varchar("name", { length: 200 }),
     phoneE164: varchar("phone_e164", { length: 20 }).notNull(),
@@ -440,7 +441,7 @@ export const leadDeliveries = mysqlTable("lead_deliveries", {
   id: bigint("id", { mode: "number", unsigned: true }).autoincrement().primaryKey(),
   leadId: bigint("lead_id", { mode: "number", unsigned: true })
     .notNull()
-    .references((): any => leads.id),
+    .references((): AnyMySqlColumn => leads.id),
   attemptNo: tinyint("attempt_no", { unsigned: true }).notNull(),
   httpStatus: smallint("http_status"),
   responseBody: text("response_body"),
@@ -475,9 +476,9 @@ export const featuredPurchases = mysqlTable(
     id: bigint("id", { mode: "number", unsigned: true }).autoincrement().primaryKey(),
     listingId: bigint("listing_id", { mode: "number", unsigned: true })
       .notNull()
-      .references((): any => listings.id),
+      .references((): AnyMySqlColumn => listings.id),
     dealerId: bigint("dealer_id", { mode: "number", unsigned: true }).references(
-      (): any => dealers.id,
+      (): AnyMySqlColumn => dealers.id,
     ),
     amountGs: bigint("amount_gs", { mode: "number", unsigned: true }).notNull(),
     days: smallint("days", { unsigned: true }).notNull(),
@@ -490,7 +491,7 @@ export const featuredPurchases = mysqlTable(
       .default("pending_payment"),
     createdBy: bigint("created_by", { mode: "number", unsigned: true })
       .notNull()
-      .references((): any => users.id),
+      .references((): AnyMySqlColumn => users.id),
     ...timestamps,
   },
   (table) => [
@@ -505,7 +506,7 @@ export const dealerPlans = mysqlTable("dealer_plans", {
   id: bigint("id", { mode: "number", unsigned: true }).autoincrement().primaryKey(),
   dealerId: bigint("dealer_id", { mode: "number", unsigned: true })
     .notNull()
-    .references((): any => dealers.id),
+    .references((): AnyMySqlColumn => dealers.id),
   planCode: varchar("plan_code", { length: 50 }).notNull(),
   listingLimit: smallint("listing_limit", { unsigned: true }),
   monthlyPriceGs: bigint("monthly_price_gs", { mode: "number", unsigned: true })
@@ -530,13 +531,13 @@ export const adPlacements = mysqlTable(
     targetUrl: varchar("target_url", { length: 500 }),
     altText: varchar("alt_text", { length: 300 }),
     cityId: bigint("city_id", { mode: "number", unsigned: true }).references(
-      (): any => cities.id,
+      (): AnyMySqlColumn => cities.id,
     ),
     brandId: bigint("brand_id", { mode: "number", unsigned: true }).references(
-      (): any => brands.id,
+      (): AnyMySqlColumn => brands.id,
     ),
     categoryId: bigint("category_id", { mode: "number", unsigned: true }).references(
-      (): any => categories.id,
+      (): AnyMySqlColumn => categories.id,
     ),
     startsAt: datetime("starts_at", { mode: "date" }).notNull(),
     endsAt: datetime("ends_at", { mode: "date" }).notNull(),
@@ -568,14 +569,14 @@ export const reports = mysqlTable(
     id: bigint("id", { mode: "number", unsigned: true }).autoincrement().primaryKey(),
     listingId: bigint("listing_id", { mode: "number", unsigned: true })
       .notNull()
-      .references((): any => listings.id),
+      .references((): AnyMySqlColumn => listings.id),
     reasonCode: varchar("reason_code", { length: 50 }).notNull(),
     detail: text("detail"),
     reporterPhoneE164: varchar("reporter_phone_e164", { length: 20 }),
     reporterIpHash: char("reporter_ip_hash", { length: 64 }),
     status: mysqlEnum("status", reportStatusEnum).notNull().default("pending"),
     resolvedBy: bigint("resolved_by", { mode: "number", unsigned: true }).references(
-      (): any => users.id,
+      (): AnyMySqlColumn => users.id,
     ),
     resolvedAt: datetime("resolved_at", { mode: "date" }),
     resolutionNote: text("resolution_note"),
@@ -607,21 +608,21 @@ export const posts = mysqlTable(
     status: mysqlEnum("status", postStatusEnum).notNull().default("draft"),
     publishedAt: datetime("published_at", { mode: "date" }),
     authorUserId: bigint("author_user_id", { mode: "number", unsigned: true }).references(
-      (): any => users.id,
+      (): AnyMySqlColumn => users.id,
     ),
     reviewedBy: bigint("reviewed_by", { mode: "number", unsigned: true }).references(
-      (): any => users.id,
+      (): AnyMySqlColumn => users.id,
     ),
     relatedBrandId: bigint("related_brand_id", { mode: "number", unsigned: true }).references(
-      (): any => brands.id,
+      (): AnyMySqlColumn => brands.id,
     ),
     relatedCityId: bigint("related_city_id", { mode: "number", unsigned: true }).references(
-      (): any => cities.id,
+      (): AnyMySqlColumn => cities.id,
     ),
     relatedCategoryId: bigint("related_category_id", {
       mode: "number",
       unsigned: true,
-    }).references((): any => categories.id),
+    }).references((): AnyMySqlColumn => categories.id),
     ...timestamps,
   },
   (table) => [
@@ -639,7 +640,7 @@ export const activityLog = mysqlTable(
   {
     id: bigint("id", { mode: "number", unsigned: true }).autoincrement().primaryKey(),
     userId: bigint("user_id", { mode: "number", unsigned: true }).references(
-      (): any => users.id,
+      (): AnyMySqlColumn => users.id,
     ),
     entityType: varchar("entity_type", { length: 50 }).notNull(),
     entityId: bigint("entity_id", { mode: "number", unsigned: true }).notNull(),
