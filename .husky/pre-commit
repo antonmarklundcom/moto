@@ -1,0 +1,6 @@
+# Política de minutos de Actions (BUILD_PLAN.md §4.15): ningún workflow de
+# GitHub Actions entra al repositorio.
+if git diff --cached --name-only --diff-filter=ACMR | grep -q '^\.github/workflows/'; then
+  echo "pre-commit: no se permiten archivos en .github/workflows/ (BUILD_PLAN.md §4.15)." >&2
+  exit 1
+fi

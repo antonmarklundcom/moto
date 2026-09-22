@@ -1,3 +1,6 @@
+// drizzle-kit no carga .env solo (CLAUDE.md §2).
+import "dotenv/config";
+
 import { defineConfig } from "drizzle-kit";
 
 if (!process.env.DATABASE_URL) {

@@ -15,7 +15,19 @@ export function formatGuaranies(amountGs: number | null | undefined): string | n
   if (!Number.isInteger(amountGs) || amountGs < 0) {
     throw new Error(`formatGuaranies: monto inválido: ${amountGs}`);
   }
-  return `Gs. ${amountGs.toLocaleString("es-PY")}`;
+  return `Gs. ${groupThousands(amountGs)}`;
+}
+
+/**
+ * Agrupa miles con punto sin depender de los datos ICU del servidor (F-5):
+ * `toLocaleString("es-PY")` puede omitir el separador en números de 4 dígitos
+ * según la versión de CLDR, y el Node del slot de Hostinger no es el de dev.
+ */
+export function groupThousands(value: number): string {
+  if (!Number.isSafeInteger(value) || value < 0) {
+    throw new Error(`groupThousands: valor inválido: ${value}`);
+  }
+  return String(value).replace(/\B(?=(\d{3})+(?!\d))/g, ".");
 }
 
 export type FinancingTerms = {
