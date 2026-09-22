@@ -224,16 +224,21 @@ Proveedor: SMTP de Hostinger si alcanza; si no, un servicio transaccional. SPF, 
 
 ```
 DATABASE_URL=mysql://usuario:clave@host:3306/base
+TEST_DATABASE_URL=           # sólo desarrollo: base de pruebas de integración
 SITE_URL=https://moto.com.py
-SITE_NOINDEX=true            # true hasta 150 publicaciones reales
+SITE_NOINDEX=true            # true | content | false (ADR-26); true hasta 150 publicaciones reales
 VENDERCRM_URL=
 VENDERCRM_API_KEY=
 STORAGE_DRIVER=local
 STORAGE_LOCAL_PATH=/home/.../uploads
 IP_HASH_SALT=
 SESSION_SECRET=
+CRON_SECRET=                 # autoriza POST /api/cron/<job> (ADR-19)
 SMTP_HOST= SMTP_PORT= SMTP_USER= SMTP_PASS=
 WHATSAPP_SITE_NUMBER=        # E.164, contacto general del sitio
+ALLOW_DEV_FIXTURES=          # sólo desarrollo; nunca en producción (ADR-24)
 ```
+
+El código lee el entorno sólo a través de `src/lib/env.ts` (`server-only`), salvo `src/db/index.ts` y los scripts.
 
 `.env.example` se versiona con todas las claves y un comentario de origen; el `.env` real nunca.
