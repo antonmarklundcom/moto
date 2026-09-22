@@ -94,10 +94,12 @@ Cabeceras: `Content-Type: application/json`, `X-Api-Key: <key del sitio>`
 ### 2.4 `idempotency_key`
 
 ```
-sha256(phone_e164 + "|" + YYYY-MM-DD-HH)
+sha256(phone_e164 + "|" + type + "|" + YYYY-MM-DD-HH)
 ```
 
-Colapsa el doble clic y el reintento tras timeout, pero deja que la misma persona vuelva a consultar mañana. Se guarda en `leads.idempotency_key` con índice único: nuestra base también rechaza el duplicado antes de llamar al CRM.
+(ADR-25; la hora es UTC; implementación única en `leadIdempotencyKey()` de `src/lib/hash.ts`.)
+
+Colapsa el doble clic y el reintento tras timeout, pero deja que la misma persona vuelva a consultar mañana. Incluye el `type` del lead para que una consulta de financiación y otra de seguro de la misma persona en la misma hora sean dos leads y no se pierda la segunda (antes la fórmula no tenía `type`). Se guarda en `leads.idempotency_key` con índice único: nuestra base también rechaza el duplicado antes de llamar al CRM.
 
 ### 2.5 Payload por tipo de lead
 

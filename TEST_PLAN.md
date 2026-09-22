@@ -25,7 +25,7 @@ Son las funciones donde un error es invisible hasta que ya hizo daño:
 
 1. **Formato de guaraníes** — `12500000 → "Gs. 12.500.000"`. Casos: cero, nulo, números de 4 y 10 dígitos.
 2. **Normalización de teléfono** — `0981 123 456`, `0981123456`, `+595 981 123456`, `595981123456` → todos a `+595981123456`. Entradas inválidas → error, nunca un valor a medias.
-3. **`idempotency_key`** — misma entrada y misma hora → misma clave; hora distinta → clave distinta; longitud entre 8 y 100.
+3. **`idempotency_key`** (ADR-25: `sha256(phone_e164|type|YYYY-MM-DD-HH)`) — misma entrada y misma hora → misma clave; hora distinta → clave distinta; **tipo distinto en la misma hora → clave distinta**; longitud entre 8 y 100.
 4. **Payload del CRM** — que **nunca** incluya `pipeline`, `stage`, `owner` ni `tag`; que omita las claves opcionales vacías en vez de mandar `""`; que `phone` siempre esté presente.
 5. **Umbral de indexación** — dado un conteo y un largo de contenido, decide indexable o `noindex`, en los bordes exactos de `SEO_ARCHITECTURE.md` §2.1.
 6. **Transiciones de estado** — cada transición permitida por rol de la matriz de `DATABASE_SCHEMA.md` §3, y **pruebas negativas** de las prohibidas.

@@ -102,10 +102,10 @@ Nótese que la venta ocurre **antes** de que el sitio esté terminado. Esto es d
 | Semana 0 | Nada | Armar la lista de 25 comercios objetivo con nombre, ciudad, teléfono y dónde publican hoy |
 | Fase 0–1 en curso | Búsqueda + ficha funcionando, sin público | Primeras 5 conversaciones. Objetivo: aprender objeciones, no cerrar |
 | ≥ 20 publicaciones cargadas | Demo mostrable en vivo | Reuniones en serio. Cargar el stock del comercio durante la reunión si se puede |
-| ≥ 80 publicaciones | Se abre al público, `noindex` fuera | Seguir cargando |
-| ≥ 150 de ≥ 5 comercios | Se quita `noindex`, se envían sitemaps | Contenido y SEO pasan a primer plano |
+| ≥ 80 publicaciones | Se abre al público (se comparte y se enlaza), **con `noindex` todavía activo** | Seguir cargando |
+| ≥ 150 de ≥ 5 comercios **y** textos legales aprobados por el abogado | El propietario pone `SITE_NOINDEX=false` y envía los sitemaps | Contenido y SEO pasan a primer plano |
 
-**Regla de indexación durante el arranque:** el sitio permanece con `noindex` global hasta superar las 150 publicaciones. Que Google descubra primero un sitio vacío es una desventaja de arranque difícil de revertir. Esta regla debe estar implementada como una variable de entorno explícita (`SITE_NOINDEX=true`), no como un olvido.
+**Regla de indexación durante el arranque:** el sitio permanece con `noindex` global hasta superar las 150 publicaciones de ≥ 5 comercios y tener los textos legales aprobados. Abrirlo al público a las 80 no quita el `noindex` (corrección C-2 de `BUILD_PLAN.md`). Que Google descubra primero un sitio vacío es una desventaja de arranque difícil de revertir. Esta regla está implementada como una variable de entorno explícita (`SITE_NOINDEX`, ADR-26), no como un olvido. Pasarla a `content` (guías y páginas estáticas indexables antes que el inventario) o a `false` es decisión del propietario.
 
 ---
 

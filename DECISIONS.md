@@ -8,11 +8,11 @@ Registro numerado de decisiones no obvias. Cada entrada: qué se decidió, qué 
 
 ---
 
-## Supuestos pendientes de confirmación
+## Supuestos (confirmados por el propietario el 2026-09-22)
 
-Estas ocho respuestas fueron asumidas por la sesión de planificación porque el propietario pidió avanzar sin esperar. **Si alguna es falsa, revisar los ADR indicados.**
+Estas ocho respuestas fueron asumidas por la sesión de planificación porque el propietario pidió avanzar sin esperar. **El propietario las confirmó todas tal cual el 2026-09-22** (`BUILD_PLAN.md` §1.3). Si alguna deja de ser cierta, revisar los ADR indicados.
 
-| # | Pregunta | Respuesta asumida | ADR afectados si cambia |
+| # | Pregunta | Respuesta (confirmada 2026-09-22) | ADR afectados si cambia |
 |---|---|---|---|
 | S-1 | ¿Hay relaciones ya existentes con comercios de motos? | No. Se parte de cero. | ADR-02, ADR-12, `DATA_SEEDING.md` completo |
 | S-2 | ¿Hay acuerdo con alguna financiera o casa de crédito? | No. | ADR-03, ADR-13 |
@@ -235,3 +235,121 @@ Estas ocho respuestas fueron asumidas por la sesión de planificación porque el
 **Por qué.** Evita un servicio externo y su coste el día uno, sin encerrarse: mover a object storage después es cambiar una implementación, no cazar rutas por todo el código.
 
 **Qué la revisaría.** Presión de espacio en disco del slot, o necesidad de CDN por volumen de tráfico.
+
+---
+
+## ADR-17 — Delta de esquema 0001
+
+**Estado:** Aceptada · 2026-09-22 · aprobada por el propietario (`BUILD_PLAN.md` §1.3, Q6)
+
+**Decisión.** Una sola migración aditiva, `drizzle/0001_schema_delta_adr17.sql`, sin borrar nada (`DATABASE_SCHEMA.md` §4 regla 2):
+
+| # | Cambio | Para qué |
+|---|---|---|
+| G-1 | `listings.manage_token_hash CHAR(64) NULL`, UNIQUE | Enlace privado `/mi-aviso/<token>` para que el particular marque vendida, pause, renueve o edite sin cuenta (ADR-05). Sólo se guarda el hash |
+| G-2 | Tabla `pending_uploads` | Las fotos se suben antes de que exista la publicación; al enviar pasan a `listing_images` |
+| G-3 | `listings.contact_whatsapp BOOLEAN NOT NULL DEFAULT true` | "Solo llamadas": el CTA pasa a "Llamar" |
+| G-4 | `listings.documentation_status ENUM('al_dia','transferencia_pendiente','no_declara') NULL` | Estado de documentación obligatorio en usadas (`TRUST_AND_SAFETY.md` §2 #5). NULL sólo en 0 km. Etiquetas `[VALIDAR con un comercio]` |
+| G-5 | `listings.external_ref VARCHAR(100) NULL` + UNIQUE(`dealer_id`, `external_ref`) | Re-importar el stock de un comercio sin duplicar |
+| G-6 | `dealers.listing_ttl_days SMALLINT UNSIGNED NULL` | Vencimiento por comercio (NULL → 60; comercios nuevos: 30) |
+| G-7 | Tabla `auth_attempts` | Bloqueo de login por IP y por cuenta que sobrevive reinicios, sin Redis |
+| G-8 | Tabla `job_runs` | Auditoría y candado de los jobs programados (ADR-19) |
+
+**Agregado en la implementación (A0).** `job_runs.lock_key VARCHAR(100) NULL UNIQUE`: vale el nombre del job mientras corre y vuelve a NULL al terminar. Un INSERT con el mismo `lock_key` choca con el UNIQUE, así que dos ejecuciones simultáneas son imposibles sin `SELECT … FOR UPDATE` ni `GET_LOCK` atado a una conexión del pool. Es la columna mínima para que la tabla "haga de candado", como pedía G-8.
+
+**Qué la revisaría.** Nada del delta en sí; columnas nuevas siguen exigiendo escalar.
+
+---
+
+## ADR-18 — Construcción en fases autónomas
+
+**Estado:** Aceptada · 2026-09-22
+
+**Decisión.** La fase 1 se construye según `BUILD_PLAN.md` §4 (protocolo) y §5 (fases): sesiones autónomas, una rama `phase/<id>` y un PR por fase, dos carriles (Opus secuencial para los cimientos; Sonnet en paralelo para el resto), cada fase con su lista de archivos propios (**Owns**). Reemplaza el orden y el formato de `CLAUDE_TASKS.md`; los T-xxx quedan como criterios de aceptación.
+
+**Escalado.** Todo ítem del checklist de `PLAN.md` §4.3 es una parada dura: la pregunta se escribe en `docs/decisions-needed.md` con opciones y recomendación, y la sesión termina. Lo demás se decide y se registra en `docs/log/<fase>.md`. Resuelve la contradicción C-3.
+
+**Qué la revisaría.** Que las fases autónomas produzcan más retrabajo que el flujo tarea a tarea.
+
+---
+
+## ADR-19 — Jobs programados en Hostinger
+
+**Estado:** Aceptada · 2026-09-22
+
+**Decisión.** Cada job (vencimiento, reintento de leads, fin de destacados, purga de subidas, purga de `auth_attempts`) es una función expuesta como `POST /api/cron/<job>`, protegida por `CRON_SECRET`, con candado y registro en `job_runs`. Disparador: cron de hPanel con `curl` `[VERIFICAR: si el plan del propietario ofrece cron para un slot Node.js]`. Alternativa: un planificador en proceso arrancado desde `instrumentation.ts`, seguro porque `job_runs` impide solapamientos. Los jobs son idénticos en ambos casos. Sin `CRON_SECRET`, los endpoints responden 503.
+
+**Descartado.** Servicios externos de cron (servicio externo, escalar), `setInterval` sin candado.
+
+---
+
+## ADR-20 — Bloque de comparación de financiación
+
+**Estado:** Aceptada · 2026-09-22
+
+**Decisión.** Toda página de modelo (`/motos/:brand/:model`) y `/motos/en-cuotas` muestran una fila por comercio que ofrece ese modelo: contado, entrega, cuotas × monto y enlace a la publicación. Cada fila dice "informado por el comercio". Sólo filas reales; con menos de 2 comercios el bloque es una oferta única, nunca relleno. Sin cuotas calculadas por el sitio (`LEGAL_AND_COMPLIANCE.md` §3.1). Sin cambio de esquema.
+
+**Por qué.** Es la cuña del producto (`PLAN.md` §1.2): "motos comparables entre comercios por entrega y cuota".
+
+---
+
+## ADR-21 — Estado vacío sin avisador en el MVP
+
+**Estado:** Aceptada · 2026-09-22
+
+**Decisión.** En el MVP el estado vacío ofrece "Escribinos qué moto buscás" → `/ir/wa/general` con la búsqueda precargada en el mensaje. `search_alerts` queda para la fase 3 (necesita envío y doble opt-in). Resuelve la contradicción entre `DATA_SEEDING.md` §6 y `PRODUCT_SPEC.md` §7.
+
+---
+
+## ADR-22 — La configuración vive en el entorno; el admin sólo la muestra
+
+**Estado:** Aceptada · 2026-09-22
+
+**Decisión.** `SITE_NOINDEX` y el resto de `ADMIN_SPEC.md` §11 son variables de entorno, fuente única de verdad. El admin las muestra en sólo lectura con el conteo de publicaciones vivas y los pasos para cambiarlas en hPanel. Sin tabla `site_settings`. Los textos legales son archivos de contenido revisados que sólo cambia el propietario tras la revisión del abogado (resuelve C-5).
+
+---
+
+## ADR-23 — Redes sociales orgánicas como canal de crecimiento
+
+**Estado:** Aceptada · 2026-09-22 · operado por el propietario
+
+**Decisión.** Página de Facebook, Instagram y Canal de WhatsApp de moto.com.py, con stock real publicado con permiso del comercio y enlace a la publicación. Sin presupuesto pago (ADR-14). No es trabajo de las fases de construcción; ningún contenido se genera sin que el propietario lo pida.
+
+---
+
+## ADR-24 — Sin datos de demostración en ningún entorno público
+
+**Estado:** Aceptada · 2026-09-22
+
+**Decisión.** No hay publicaciones de demostración ni en producción ni en staging. Las primeras conversaciones con comercios muestran el sitio vacío funcionando; el stock del primer comercio que diga que sí (con autorización escrita) pasa a ser la demo. Los datos falsos existen sólo en bases locales, vía `scripts/dev-fixtures.ts`, que se niega a correr fuera de local (G-21). Resuelve C-1.
+
+---
+
+## ADR-25 — Clave de idempotencia de leads con tipo
+
+**Estado:** Aceptada · 2026-09-22 · reemplaza la fórmula de `INTEGRATIONS.md` §2.4 anterior
+
+**Decisión.** `idempotency_key = sha256(phone_e164 + "|" + type + "|" + YYYY-MM-DD-HH)`, con la hora en UTC. Implementación única: `leadIdempotencyKey()` en `src/lib/hash.ts`.
+
+**Por qué.** `leads.idempotency_key` es UNIQUE. Con la fórmula anterior, una persona que pedía financiación y después seguro en la misma hora perdía el segundo lead, en nuestra base y en el CRM (F-3). Sigue midiendo 64 caracteres y sigue siendo estable ante reintentos.
+
+---
+
+## ADR-26 — `SITE_NOINDEX` con tres modos
+
+**Estado:** Aceptada · 2026-09-22 · el cambio de modo es siempre decisión del propietario
+
+**Decisión.** `SITE_NOINDEX` acepta:
+
+| Valor | Efecto |
+|---|---|
+| `true` (por defecto) | Todo `noindex`. También si falta o tiene un valor desconocido: falla cerrado |
+| `content` | Guías, "cómo funciona" y páginas estáticas indexables; inventario y páginas programáticas `noindex` y fuera del sitemap |
+| `false` | Rigen las reglas de umbral de `SEO_ARCHITECTURE.md` §2.1 |
+
+Implementado en `src/lib/env.ts` (`siteIndexingMode()`, `globalIndexingAllows()`). El layout raíz emite `noindex, follow` salvo con `false`; las páginas de contenido lo sobrescriben con `content`.
+
+**Operación.** Las páginas prerenderadas fijan el valor al hacer el build, y las cabeceras de `next.config.ts` (CSP con el origen de `VENDERCRM_URL`) también: **cambiar `SITE_NOINDEX` o `VENDERCRM_URL` en hPanel exige un rebuild** del slot.
+
+**Por qué.** Con `true` global, las guías y páginas estáticas no pueden empezar a ganar confianza mientras crece el inventario; las páginas programáticas finas ya están protegidas por los umbrales (F-12).
+

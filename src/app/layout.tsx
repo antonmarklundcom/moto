@@ -8,7 +8,7 @@ import "./globals.css";
 // globalIndexingAllows("content"). Falla cerrado: sin la variable, noindex.
 //
 // Ojo: en páginas prerenderadas el valor se fija en el build. Cambiar
-// SITE_NOINDEX en el panel exige un rebuild (DEPLOY.md).
+// SITE_NOINDEX en el panel exige un rebuild (DECISIONS.md ADR-26).
 export function generateMetadata(): Metadata {
   return {
     metadataBase: new URL(env.siteUrl()),
