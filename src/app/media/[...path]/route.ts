@@ -34,9 +34,8 @@ export async function GET(_request: Request, { params }: { params: Promise<{ pat
       "Content-Type": target.contentType,
       "Content-Length": String(data.length),
       "Cache-Control": "public, max-age=31536000, immutable",
+      // La CSP y el resto de cabeceras de seguridad vienen de next.config.ts.
       "X-Content-Type-Options": "nosniff",
-      // Una imagen nunca ejecuta nada, aunque alguien la abra directo.
-      "Content-Security-Policy": "default-src 'none'; img-src 'self'; style-src 'unsafe-inline'; sandbox",
     },
   });
 }
