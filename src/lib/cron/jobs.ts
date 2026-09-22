@@ -3,10 +3,12 @@
 import type { JobFn } from "./runner";
 import { expireListings } from "./jobs/expire-listings";
 import { purgeAuthAttempts } from "./jobs/purge-auth-attempts";
+import { purgeUploads } from "./jobs/purge-uploads";
 
 export const CRON_JOBS: Readonly<Record<string, JobFn>> = {
   "expire-listings": expireListings,
   "purge-auth-attempts": purgeAuthAttempts,
+  "purge-uploads": purgeUploads,
 };
 
 export function getCronJob(name: string): JobFn | null {
