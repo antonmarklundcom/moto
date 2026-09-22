@@ -54,3 +54,13 @@ export async function isLockedOut(keys: AttemptKeys, now = new Date()): Promise<
 export async function recordAttempt(keys: AttemptKeys, succeeded: boolean, now = new Date()): Promise<void> {
   await db.insert(authAttempts).values({ emailHash: keys.emailHash, ipHash: keys.ipHash, succeeded, createdAt: now });
 }
+
+/** Borra los fallos de una cuenta (create-admin --reset): el dueño bloqueado vuelve a entrar. */
+export async function clearAccountFailures(email: string, salt: string): Promise<number> {
+  const { emailHash } = attemptKeys(email, null, salt);
+  if (!emailHash) return 0;
+  const [res] = await db
+    .delete(authAttempts)
+    .where(and(eq(authAttempts.emailHash, emailHash), eq(authAttempts.succeeded, false)));
+  return res.affectedRows;
+}

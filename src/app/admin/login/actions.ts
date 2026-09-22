@@ -8,7 +8,8 @@ import { endSession, startSession } from "@/lib/auth/session";
 import { env } from "@/lib/env";
 import { clientIp, RateLimiter } from "@/lib/rate-limit";
 
-export type LoginState = { error: string | null };
+// `email` vuelve al formulario: React 19 lo resetea después de cada envío.
+export type LoginState = { error: string | null; email?: string };
 
 // Primera barrera, en memoria: 20 envíos por minuto por IP. El bloqueo que
 // cuenta (5 fallos) es el persistente de auth_attempts.
@@ -21,15 +22,15 @@ export async function loginAction(_prev: LoginState, form: FormData): Promise<Lo
   // Honeypot: un humano no ve ni completa este campo.
   if (String(form.get("website") ?? "") !== "") return { error: INVALID };
 
-  const email = String(form.get("email") ?? "");
+  const email = String(form.get("email") ?? "").slice(0, 320);
   const password = String(form.get("password") ?? "");
-  if (!email || !password) return { error: "Completá el email y la contraseña." };
+  if (!email || !password) return { error: "Completá el email y la contraseña.", email };
 
   const ip = clientIp(await headers());
-  if (!burst.check(ip ?? "sin-ip").allowed) return { error: LOCKED };
+  if (!burst.check(ip ?? "sin-ip").allowed) return { error: LOCKED, email };
 
   const result = await authenticate({ email, password, ip, salt: env.ipHashSalt() });
-  if (!result.ok) return { error: result.reason === "locked" ? LOCKED : INVALID };
+  if (!result.ok) return { error: result.reason === "locked" ? LOCKED : INVALID, email };
 
   await startSession(result.userId);
   redirect(safeAdminNext(String(form.get("next") ?? "")));

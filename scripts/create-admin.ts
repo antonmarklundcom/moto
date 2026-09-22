@@ -5,6 +5,7 @@
 // La contraseña NUNCA va en los argumentos (quedaría en el historial y en `ps`):
 // se pide sin eco si hay terminal, o se lee de stdin (primera línea):
 //   printf '%s\n' "$CLAVE" | npm run create-admin -- --email …
+// Con --reset también borra los intentos fallidos de esa cuenta (desbloqueo).
 //
 // tsx no carga .env solo (CLAUDE.md §2): dotenv va primero, antes de que
 // src/db lea DATABASE_URL.
@@ -12,6 +13,7 @@ import "dotenv/config";
 
 import { parseArgs } from "node:util";
 import { closeDb } from "../src/db";
+import { clearAccountFailures } from "../src/lib/auth/lockout";
 import { passwordProblem } from "../src/lib/auth/password";
 import { createPanelUser } from "../src/lib/auth/users";
 
@@ -92,6 +94,10 @@ async function main() {
     role: values.role,
     resetIfExists: values.reset,
   });
+  // Resetear también desbloquea la cuenta (los fallos por IP siguen contando).
+  const salt = process.env.IP_HASH_SALT?.trim();
+  if (!result.created && salt) await clearAccountFailures(values.email, salt);
+
   console.log(
     result.created
       ? `Usuario ${values.role} creado (id ${result.id}).`

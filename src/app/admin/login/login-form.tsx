@@ -24,6 +24,7 @@ export function LoginForm({ next }: { next: string }) {
           name="email"
           type="email"
           autoComplete="username"
+          defaultValue={state.email ?? ""}
           required
           className="min-h-11 rounded border border-gray-500 px-3 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700"
         />
