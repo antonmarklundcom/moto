@@ -193,7 +193,6 @@ export function parsePage(raw: string | undefined): number | null {
 export function normalizeQuery(raw: string | undefined): string | undefined {
   if (raw === undefined) return undefined;
   const q = raw
-    // eslint-disable-next-line no-control-regex
     .replace(/[\u0000-\u001f\u007f]/g, " ")
     .replace(/\s+/g, " ")
     .trim()
