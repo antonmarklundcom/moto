@@ -68,3 +68,10 @@ describe("shell público + /como-funciona", () => {
     expect(String(meta.description).length).toBeLessThanOrEqual(160);
   });
 });
+
+describe("layout público: robots por defecto", () => {
+  it("una página que no declara robots queda noindex, follow (falla cerrado)", async () => {
+    const { metadata } = await import("@/app/(public)/layout");
+    expect(metadata.robots).toEqual({ index: false, follow: true });
+  });
+});
