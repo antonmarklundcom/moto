@@ -31,6 +31,11 @@ describe("normalizePhone", () => {
     expect(() => normalizePhone("0211234567")).toThrow();
   });
 
+  it("descarta el 0 tipeado después del código de país", () => {
+    expect(normalizePhone("+595 0981 123 456")).toBe(expected);
+    expect(normalizePhone("5950981123456")).toBe(expected);
+  });
+
   it("acepta el prefijo internacional 00595", () => {
     expect(normalizePhone("00595 981 123 456")).toBe(expected);
   });

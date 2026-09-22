@@ -15,7 +15,12 @@ export type GuardEnv = {
   NODE_ENV?: string;
   ALLOW_DEV_FIXTURES?: string;
   DATABASE_URL?: string;
+  SITE_URL?: string;
 };
+
+// Nombres de base de Hostinger: "u123456789_moto". En el slot, MySQL también
+// es "localhost", así que el host solo no alcanza para reconocer producción.
+const HOSTINGER_DB_NAME = /^u\d+_/;
 
 /**
  * Devuelve `null` si se puede correr, o el motivo por el que no. Exige las
@@ -41,6 +46,21 @@ export function fixturesRefusalReason(env: GuardEnv): string | null {
   }
   if (!LOCAL_HOSTS.has(host)) {
     return `DATABASE_URL apunta a "${host}", que no es una base local. Sólo localhost/127.0.0.1.`;
+  }
+  const dbName = decodeURIComponent(new URL(env.DATABASE_URL).pathname.replace(/^\//, ""));
+  if (HOSTINGER_DB_NAME.test(dbName)) {
+    return `La base "${dbName}" tiene nombre de base de Hostinger: esto parece el servidor, no una máquina de desarrollo.`;
+  }
+  if (env.SITE_URL) {
+    let siteHost: string | null = null;
+    try {
+      siteHost = new URL(env.SITE_URL).hostname;
+    } catch {
+      return "SITE_URL no es una URL válida.";
+    }
+    if (!LOCAL_HOSTS.has(siteHost)) {
+      return `SITE_URL es "${env.SITE_URL}": las publicaciones de prueba sólo van a un sitio local.`;
+    }
   }
   return null;
 }
