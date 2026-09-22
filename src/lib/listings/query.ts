@@ -205,16 +205,19 @@ export type SearchInput = {
   now?: Date;
 };
 
+/** La consulta de conteo, sin ejecutar (la usan `countListings` y el EXPLAIN de tests/perf). */
+export function countQuery(filters: ListingFilters, opts: { now?: Date; scope?: ListingScope } = {}) {
+  const where = listingWhere(filters, opts.now, opts.scope);
+  const base = db.select({ n: count() }).from(listings);
+  return needsModelJoin(filters) ? base.leftJoin(models, eq(models.id, listings.modelId)).where(where) : base.where(where);
+}
+
 /** Cantidad de publicaciones que cumplen los filtros (vivas por defecto). */
 export async function countListings(
   filters: ListingFilters,
   opts: { now?: Date; scope?: ListingScope } = {},
 ): Promise<number> {
-  const where = listingWhere(filters, opts.now, opts.scope);
-  const base = db.select({ n: count() }).from(listings);
-  const [row] = needsModelJoin(filters)
-    ? await base.leftJoin(models, eq(models.id, listings.modelId)).where(where)
-    : await base.where(where);
+  const [row] = await countQuery(filters, opts);
   return Number(row?.n ?? 0);
 }
 
@@ -223,21 +226,25 @@ export function countLiveListings(filters: ListingFilters, now?: Date): Promise<
   return countListings(filters, { now, scope: "live" });
 }
 
-/** Una página de resultados + el total real. Página fuera de rango → `items` vacío. */
-export async function searchListings(input: SearchInput): Promise<ListingSearchResult> {
-  const perPage = input.perPage ?? DEFAULT_PER_PAGE;
-  const page = Math.max(1, Math.min(input.page ?? 1, MAX_PAGES));
-  const now = input.now ?? new Date();
-  const scope = input.scope ?? "live";
-  const where = listingWhere(input.filters, now, scope);
+/**
+ * Ids de una página de resultados, sin ejecutar (también para EXPLAIN).
+ * "Deferred join": se ordena y pagina sólo sobre `listings` (filas angostas,
+ * índices propios) y recién después se buscan los datos de 24 filas. Con el
+ * JOIN completo, MySQL elegía empezar por `cities` y ordenar miles de filas
+ * anchas (docs/log/A2.md, EXPLAIN).
+ */
+export function pageIdsQuery(input: SearchInput & { page: number; perPage: number }) {
+  const where = listingWhere(input.filters, input.now, input.scope);
+  const base = db.select({ id: listings.id }).from(listings);
+  return (needsModelJoin(input.filters) ? base.leftJoin(models, eq(models.id, listings.modelId)).where(where) : base.where(where))
+    .orderBy(...listingOrderBy(input.sort ?? "recientes"))
+    .limit(input.perPage)
+    .offset((input.page - 1) * input.perPage);
+}
 
-  const total = await countListings(input.filters, { now, scope });
-  const pageCount = Math.min(Math.ceil(total / perPage), MAX_PAGES);
-  if (total === 0 || page > pageCount) {
-    return { items: [], total, page, perPage, pageCount };
-  }
-
-  const rows = await db
+/** Datos de tarjeta para ids ya elegidos (el orden lo pone quien llama). */
+function cardRowsQuery(ids: number[]) {
+  return db
     .select({
       id: listings.id,
       slug: listings.slug,
@@ -273,10 +280,25 @@ export async function searchListings(input: SearchInput): Promise<ListingSearchR
     .innerJoin(cities, eq(cities.id, listings.cityId))
     .leftJoin(models, eq(models.id, listings.modelId))
     .leftJoin(dealers, eq(dealers.id, listings.dealerId))
-    .where(where)
-    .orderBy(...listingOrderBy(input.sort ?? "recientes"))
-    .limit(perPage)
-    .offset((page - 1) * perPage);
+    .where(inArray(listings.id, ids));
+}
+
+/** Una página de resultados + el total real. Página fuera de rango → `items` vacío. */
+export async function searchListings(input: SearchInput): Promise<ListingSearchResult> {
+  const perPage = input.perPage ?? DEFAULT_PER_PAGE;
+  const page = Math.max(1, Math.min(input.page ?? 1, MAX_PAGES));
+  const now = input.now ?? new Date();
+  const scope = input.scope ?? "live";
+  const total = await countListings(input.filters, { now, scope });
+  const pageCount = Math.min(Math.ceil(total / perPage), MAX_PAGES);
+  if (total === 0 || page > pageCount) {
+    return { items: [], total, page, perPage, pageCount };
+  }
+
+  const ids = (await pageIdsQuery({ ...input, page, perPage, now, scope })).map((r) => r.id);
+  if (ids.length === 0) return { items: [], total, page, perPage, pageCount };
+  const byId = new Map((await cardRowsQuery(ids)).map((r) => [r.id, r]));
+  const rows = ids.map((id) => byId.get(id)).filter((r) => r !== undefined);
 
   const images = await firstImages(rows.map((r) => r.id));
   const items: ListingCardData[] = rows.map((r) => ({
@@ -362,27 +384,25 @@ export type GroupedCount = { key: Partial<Record<CountDimension, number | string
  * Ej.: `groupLiveCounts(["brand", "city"])` → conteo por marca × ciudad, para
  * decidir qué cruces pasan el umbral sin una consulta por página.
  */
+/** La consulta agrupada, sin ejecutar (también para EXPLAIN). */
+export function groupCountQuery(dimensions: readonly CountDimension[], filters: ListingFilters = {}, now?: Date) {
+  if (dimensions.length === 0 || dimensions.length > 2) {
+    throw new Error("groupLiveCounts: una o dos dimensiones");
+  }
+  const selection = Object.fromEntries(dimensions.map((d) => [d, DIMENSION_COLUMN[d]]));
+  const base = db.select({ ...selection, n: count() }).from(listings);
+  const where = listingWhere(filters, now, "live");
+  return (needsModelJoin(filters) ? base.leftJoin(models, eq(models.id, listings.modelId)).where(where) : base.where(where)).groupBy(
+    ...dimensions.map((d) => DIMENSION_COLUMN[d]),
+  );
+}
+
 export async function groupLiveCounts(
   dimensions: readonly CountDimension[],
   filters: ListingFilters = {},
   now?: Date,
 ): Promise<GroupedCount[]> {
-  if (dimensions.length === 0 || dimensions.length > 2) {
-    throw new Error("groupLiveCounts: una o dos dimensiones");
-  }
-  const columns = dimensions.map((d) => DIMENSION_COLUMN[d]);
-  const selection = Object.fromEntries(dimensions.map((d) => [d, DIMENSION_COLUMN[d]])) as Record<
-    string,
-    (typeof columns)[number]
-  >;
-  const base = db
-    .select({ ...selection, n: count() })
-    .from(listings);
-  const where = listingWhere(filters, now, "live");
-  const rows = await (needsModelJoin(filters)
-    ? base.leftJoin(models, eq(models.id, listings.modelId)).where(where)
-    : base.where(where)
-  ).groupBy(...columns);
+  const rows = await groupCountQuery(dimensions, filters, now);
   return rows.map((row) => {
     const r = row as Record<string, unknown>;
     return {
