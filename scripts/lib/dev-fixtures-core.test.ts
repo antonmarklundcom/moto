@@ -45,6 +45,24 @@ describe("fixturesRefusalReason (G-21)", () => {
     expect(fixturesRefusalReason({ ALLOW_DEV_FIXTURES: "1", DATABASE_URL: "no-url" })).not.toBeNull();
   });
 
+  it("se niega con una base con nombre de Hostinger aunque el host sea localhost", () => {
+    expect(
+      fixturesRefusalReason({ ALLOW_DEV_FIXTURES: "1", DATABASE_URL: "mysql://u:p@localhost/u123456789_moto" }),
+    ).toMatch(/Hostinger/);
+  });
+
+  it("se niega si SITE_URL es el sitio público", () => {
+    expect(
+      fixturesRefusalReason({ ALLOW_DEV_FIXTURES: "1", DATABASE_URL: LOCAL_URL, SITE_URL: "https://moto.com.py" }),
+    ).toMatch(/SITE_URL/);
+  });
+
+  it("acepta SITE_URL local", () => {
+    expect(
+      fixturesRefusalReason({ ALLOW_DEV_FIXTURES: "1", DATABASE_URL: LOCAL_URL, SITE_URL: "http://localhost:3000" }),
+    ).toBeNull();
+  });
+
   it("acepta localhost", () => {
     expect(
       fixturesRefusalReason({ ALLOW_DEV_FIXTURES: "1", DATABASE_URL: "mysql://u:p@localhost/moto_dev" }),

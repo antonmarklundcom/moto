@@ -25,17 +25,20 @@ export type NormalizePhoneOptions = {
 
 function toNational(raw: string): string {
   const digits = raw.replace(/[^\d]/g, "");
+  // "+595 0981 …" es un error de tipeo frecuente: el 0 nacional después del
+  // código de país se descarta.
+  const afterCountryCode = (rest: string) => (rest.startsWith("0") ? rest.slice(1) : rest);
   if (raw.trim().startsWith("+")) {
     if (!digits.startsWith(PARAGUAY_COUNTRY_CODE)) {
       throw new Error(`normalizePhone: número inválido: ${raw}`);
     }
-    return digits.slice(PARAGUAY_COUNTRY_CODE.length);
+    return afterCountryCode(digits.slice(PARAGUAY_COUNTRY_CODE.length));
   }
   if (digits.startsWith("00" + PARAGUAY_COUNTRY_CODE)) {
-    return digits.slice(2 + PARAGUAY_COUNTRY_CODE.length);
+    return afterCountryCode(digits.slice(2 + PARAGUAY_COUNTRY_CODE.length));
   }
   if (digits.startsWith(PARAGUAY_COUNTRY_CODE) && digits.length > 9) {
-    return digits.slice(PARAGUAY_COUNTRY_CODE.length);
+    return afterCountryCode(digits.slice(PARAGUAY_COUNTRY_CODE.length));
   }
   if (digits.startsWith("0")) {
     return digits.slice(1);
