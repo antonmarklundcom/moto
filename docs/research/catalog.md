@@ -28,7 +28,15 @@ razonable confianza, pero es un escalón por debajo de abrir la página. Una
 sesión futura con acceso de red distinto debería re-confirmar contra la
 página viva antes de que el catálogo se use para importar stock real (B8).
 
-## 1. Honda — antes: 0 modelos activos de 4. Ahora: 10 de 12.
+**Criterio de activación (revisión Opus, misma fecha).** El catálogo es "modelos
+que se venden o se vendieron en Paraguay", 0 km **y usadas** — no la gama
+vigente del distribuidor. Una XR 250 Tornado 2008 o una CB 500X 2021 usadas
+son publicables y sin fila en el catálogo bloquearían la publicación
+(`model_id` NOT NULL al publicar). Evidencia mínima para activar: aviso del
+distribuidor oficial, página de producto de la marca en Paraguay, o nota de
+prensa paraguaya. Un aviso de un particular solo no alcanza.
+
+## 1. Honda — antes: 0 modelos activos de 4. Ahora: 12 de 14.
 
 Honda es la marca de mayor volumen probable del segmento (F-10) y estaba
 completamente inactiva. Distribuidor oficial confirmado: **DIESA S.A.**
@@ -47,16 +55,23 @@ Encarnación, Carapeguá, Villarrica, Katuete, M. Auxiliadora), vía:
 |---|---|---|---|
 | XR 150L | 150 | activo | Clasipar, "MOTOCICLETA HONDA XR150L 0KM — DIESA S.A." (#1153760): "Enduro, Cross and Trial... monocilíndrico 4 tiempos refrigerado por aire, 150cc". Reemplaza el "XR 150" genérico de la semilla anterior — el nombre comercial real lleva la L. |
 | Wave 110S | 110 | activo | Clasipar, avisos "DIESA S.A." listan "WAVE110S". Reemplaza el "Wave" sin cilindrada de la semilla anterior. |
-| CG 110 | 110 | activo | Clasipar, avisos "DIESA S.A." ("CG110 desde Gs. 308.000" en cuota). |
+| CG 110 | 110 | activo | Clasipar, avisos "DIESA S.A." ("CG110 desde Gs. 308.000" en cuota); título "MOTO HONDA CG 110 - 0KM" (#2025140); Honda Motos Paraguay en Facebook: "La moto Honda CG110 es la preferida por los paraguayos". |
+| Navi 110 | 110 | activo | Título de aviso de DIESA "NO TE QUEDES SIN TU MOTO HONDA - DIESA CG 110 CB1 125 NAVI 110 CB160 XR150 Africa 1100" (#92967, aviso antiguo) y aviso "HONDA NAVI 110" (#1996719). Agregado en la revisión Opus. |
+| CB1 125 | 125 | activo | Mismo título de aviso de DIESA (#92967). Agregado en la revisión Opus. |
 | XR 190 | 190 | activo | Clasipar, avisos "DIESA S.A." ("XR190 desde Gs. 835.000" en cuota); también hay avisos de terceros ("HONDA XR190 18 MILLONES OFERTA"). |
-| XR 250 Tornado | 250 | activo | Clasipar, avisos "DIESA S.A." (cuota Gs. 1.299.000). |
-| CRF 250F | 250 | activo | Clasipar, avisos "DIESA S.A." (listado junto a CB500X como parte del catálogo Honda Paraguay). |
-| CB 500X | 500 | activo | Clasipar, avisos "DIESA S.A.". |
+| XR 250 Tornado | 250 | activo | Clasipar, avisos "DIESA S.A." (cuota Gs. 1.299.000); título "MOTO HONDA TORNADO 250 - 0KM" (#2025150). Posiblemente ya no esté en la gama vigente (el NX500 y la línea XR 190 la cubren), pero hay stock usado real. |
+| CRF 250F | 250 | activo | Sólo en el texto de un aviso multi-modelo de "DIESA S.A.", sin título propio — **la evidencia más débil de la tabla**. Primera fila a re-confirmar contra el sitio vivo. |
+| CB 500X | 500 | activo | Clasipar, avisos "DIESA S.A." y aviso propio "Honda CB500X" (#2368446, 2021 usada). Honda la reemplazó por la NX500 a nivel global; se mantiene por el mercado de usadas. |
 | Rebel 500 | 500 | activo | ABC Color, ["Lanzan Honda Rebel 500, NX500 y X-ADV 750"](https://www.abc.com.py/empresariales/2025/04/12/lanzan-honda-rebel-500-nx500-y-x-adv-750/) (2025-04-12); La Nación, ["Diesa presentó las nuevas motocicletas Rebel 500, NX500 y X-ADV 750"](https://www.lanacion.com.py/negocios/2025/04/04/diesa-presento-las-nuevas-motocicletas-rebel-500-nx500-y-x-adv-750/) (2025-04-04). Lanzamiento oficial de Diesa S.A., con nombres y cargos (Miguel Carrizosa, presidente de Diesa; Esteban Carrizosa, brand manager de Honda Motos). |
 | NX500 | 500 | activo | Mismas dos notas de prensa. |
 | X-ADV 750 | 750 | activo | Mismas dos notas de prensa. |
 | CG 150 Titan | 150 | **sigue inactivo** | No aparece en ningún aviso "DIESA S.A." relevado. "Titan" es nomenclatura de Argentina/Brasil para la línea CG; Paraguay parece vender "CG 110" sin el sufijo. `[VERIFICAR: si DIESA vende alguna variante "Titan" o si el nombre correcto en Paraguay es CG 110/CG 125]`. |
-| CB 125 | 125 | **sigue inactivo** | No aparece en ningún aviso "DIESA S.A." relevado; en su lugar aparece CB 500X (gama alta, no de entrada). `[VERIFICAR: si Honda Paraguay vende algún CB de cilindrada de entrada]`. |
+| CB 125 | 125 | **sigue inactivo** | No aparece con este nombre; DIESA sí lista "CB1 125" (fila propia, activa). `[VERIFICAR: si "CB 125" es un modelo distinto vendido en Paraguay o un duplicado de CB1 125]`. |
+
+No agregados, a propósito: "CB160" y "Africa 1100" aparecen en el mismo
+título de DIESA (#92967), pero el título no da el nombre comercial exacto
+(¿CB160F? ¿CRF1100L Africa Twin?). Adivinar el nombre sería inventarlo.
+`[VERIFICAR: nombre comercial exacto en hondamotos.com.py]`.
 
 `hondamotos.com.py` y `www.honda.com.py` (encontrado este ciclo — dominio
 distinto al ya conocido) siguen sin poder abrirse directo por la limitación
@@ -65,14 +80,16 @@ en la próxima sesión con acceso.
 
 ## 2. Marca nueva: Star (ALEX S.A.)
 
-`G-16` pedía sumar marcas del segmento de entrada no cubiertas. La búsqueda
-de mercado encontró que **Star** (junto con Kenton, ya en la semilla) es de
-las de mayor volumen en Paraguay — no estaba en el catálogo.
+`G-16` pedía sumar marcas del segmento de entrada no cubiertas. **Star** es
+una marca fabricada/ensamblada en Paraguay, orientada a cobradoras y
+motonetas, y no estaba en el catálogo. No se afirma su participación de
+mercado: la única cifra disponible es de la propia marca.
 
 - ABC Color, ["STAR, la motocicleta que acompaña en todo lo que uno se
   propone"](https://www.abc.com.py/empresariales/2025/07/10/star-la-motocicleta-que-acompana-en-todo-lo-que-uno-se-propone/)
   (2025-07-10): marca de **ALEX S.A.**, empresa paraguaya con más de 75 años
-  en el mercado nacional, "más de 450.000 motocicletas STAR" circulando.
+  en el mercado nacional, "más de 450.000 motocicletas STAR" circulando
+  (sección Empresariales, cifra declarada por la marca, no verificada).
 - Sitio propio: [star.com.py](https://www.star.com.py/), con categorías
   Cobrador, Motoneta, Pistera, Todoterreno, Carga.
 
@@ -105,12 +122,8 @@ La semilla anterior sólo tenía "Classic 125", sourced a un retailer
 | GTR 150 LTD | 150 | kenton.com.py/moto/gtr-150-ltd/ |
 | Blitz 110 | 110 | kenton.com.py/moto/blitz-110-dlx/, /blitz-110-se/, /blitz-110-automatic/ |
 
-Una búsqueda de mercado (sin una nota de prensa fechada específica, así que
-se trata con más cautela) describió a "Kenton Blitz 110" como, en sus
-palabras, "esencialmente la moto nacional" y a GTR 150 / GL 150 Pro como
-preferidas para reparto — coherente con que sean cobradoras de alto volumen,
-pero esa frase puntual no se cita en ningún documento porque no tiene una
-URL fechada atrás.
+No se afirma nada sobre qué modelo de Kenton "vende más": ninguna fuente
+fechada lo dice.
 
 ## 4. Marcas revisadas sin cambios (fuente paraguaya específica no encontrada)
 
@@ -160,7 +173,8 @@ aplique. Categorías existentes (`src/db/seed-data/categories.ts`): `naked`,
 | star/smx-150 | enduro-cross | `[VERIFICAR: "SMX" sugiere supermotard/cross, no se confirmó la ficha]` |
 | honda/xr-150 (XR 150L), xr-190, xr-250-tornado, crf-250f | enduro-cross | Confirmado explícito como Enduro/Cross/Trial en el aviso de XR150L; línea XR/CRF completa |
 | honda/wave (Wave 110S) | cub | Underbone semiautomática clásica |
-| honda/cg-110 | naked | Commuter clásica |
+| honda/cg-110, cb1-125 | naked | Commuter clásica |
+| honda/navi-110 | scooter | Automática (CVT), estética de mini moto `[VERIFICAR: la categoría que usaría un comercio]` |
 | honda/cb-500x | touring | Adventure-touring carenada |
 | honda/rebel-500 | custom-chopper | Cruiser |
 | honda/nx500 | touring | Adventure |

@@ -16,10 +16,10 @@ acá** salvo que venga de una fuente pública citada (regla de `BUILD_PLAN.md`
 ### Clasipar (`clasipar.paraguay.com`, también `clasiparaguay.com`)
 
 - Qué es: clasificados generales (autos, motos, inmuebles, empleo, servicios),
-  con sección propia `/categorias/motos`. Es, por lejos, el sitio con más
-  presencia en los resultados de búsqueda de este research: **los propios
-  distribuidores oficiales publican ahí** (todos los avisos "DIESA S.A." de
-  Honda en `catalog.md` §1 son de Clasipar).
+  con sección propia `/categorias/motos`. Fue el sitio que más apareció en
+  las búsquedas de este research (observación de esta sesión, no una medida
+  de tráfico), y **los propios distribuidores oficiales publican ahí**: todos
+  los avisos "DIESA S.A." de Honda en `catalog.md` §1 son de Clasipar.
 - Contacto: aviso individual con botón "Llamar por WhatsApp" (confirmado por
   el texto de al menos un aviso). Requiere cuenta para publicar
   (`/publicar-aviso`).

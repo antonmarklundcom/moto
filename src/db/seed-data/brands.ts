@@ -26,8 +26,9 @@
 //   Paraguay habilitó su nuevo e innovador Showroom").
 // - Star: marca paraguaya de ALEX S.A. (75+ años en el mercado), confirmada en
 //   star.com.py y ABC Color "STAR, la motocicleta que acompaña en todo lo que
-//   uno se propone" (2025-07-10). Junto con Kenton, es una de las marcas de
-//   mayor volumen del segmento de entrada en Paraguay — se activa.
+//   uno se propone" (2025-07-10, sección Empresariales: la cifra de "más de
+//   450.000 motos STAR circulando" es de la propia marca). Fabricada/ensamblada
+//   en Paraguay, segmento de entrada (cobradoras, motonetas) — se activa.
 
 export type BrandSeed = {
   name: string;
