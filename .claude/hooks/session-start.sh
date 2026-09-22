@@ -108,6 +108,12 @@ for URL in "$DEV_URL" "$TEST_URL"; do
   DATABASE_URL="$URL" npx tsx scripts/seed-catalog.ts >>"$LOG" 2>&1 || fail "seed:catalog ${URL##*/}"
 done
 
+# 7b. moto_test.listings se reconstruye (está vacía: tarda milisegundos). Tras
+# un apagado sucio de MySQL (el contenedor se recicla), el índice FULLTEXT de
+# InnoDB puede dejar de ver filas nuevas y las pruebas de texto libre fallan
+# (visto en A2). Reconstruir la tabla regenera el índice.
+mysql moto_test -e "ALTER TABLE listings ENGINE=InnoDB" >>"$LOG" 2>&1 || fail "rebuild moto_test.listings"
+
 # 8. Variables para la sesión (las pruebas de integración usan TEST_DATABASE_URL).
 if [ -n "${CLAUDE_ENV_FILE:-}" ]; then
   grep -q TEST_DATABASE_URL "$CLAUDE_ENV_FILE" 2>/dev/null \

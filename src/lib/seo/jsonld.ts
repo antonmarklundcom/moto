@@ -167,6 +167,7 @@ export type ListingJsonLdInput = {
   priceGs?: number | null;
   hasFinancingOnly: boolean;
   cityName: string;
+  /** Sólo el nombre de un comercio. Nunca el nombre de un particular (dato personal). */
   sellerName?: string | null;
 };
 
