@@ -1,6 +1,6 @@
 # BUILD_PLAN.md — moto.com.py execution plan
 
-**Status:** proposed, awaiting owner answers to §1.2 before prompt files are written.
+**Status:** approved 2026-09-22. The owner merged PR #9 and said "build all these", which is read as **yes to every default in §1.2** (Q1–Q10). Next phase: **A0** (`prompts/opus-A0-foundation.md`).
 **Date:** 2026-09-22
 **What this file is:** the execution layer on top of the 18 spec documents. It does **not** replace `PLAN.md`, `DECISIONS.md` or any spec; it (1) audits them for gaps, (2) proposes the decisions that close those gaps, (3) turns the remaining work into phases that autonomous sessions can run in parallel, and (4) lists everything only the owner can do.
 
@@ -46,6 +46,34 @@ The eight assumptions S-1…S-8 were taken without you. Confirm or correct:
 | Q8 | Staging slot: use a 2nd Hostinger Node slot at `staging.moto.com.py` (basic auth, own DB)? | Yes | Without it, the first deploy of every risky change is production |
 | Q9 | Organic social channels (FB page, Instagram, WhatsApp Channel) as a growth track (ADR-23)? | Yes, owner-run, zero budget | If no, growth relies on SEO + direct sales only, which is slow in a small market |
 | Q10 | Cloudflare free plan in front of Hostinger (CDN for images, DDoS, cache)? | Measure first in C2, decide with data | It's an external service (escalation rule), so it needs your explicit OK |
+
+### 1.3 Owner answers (2026-09-22)
+
+All defaults accepted: S-1…S-8 as assumed; ADR-17 (schema delta) and ADR-18…ADR-24 approved; staging slot yes (deploy later, owner-run); organic social yes; Cloudflare measured in C2. The owner deploys to the Hostinger Node.js slot himself later (H-1), so **no phase blocks on deployment**. Phases verify against local MySQL.
+
+---
+
+## 2.0 Re-audit of PRs #1–#8 (done 2026-09-22; don't take earlier work as truth)
+
+Code from T-001…T-005 was re-read line by line; unit tests pass (33/33). These findings are **fixed in A0**:
+
+| # | Where | Finding | Fix in A0 |
+|---|---|---|---|
+| F-1 | `src/db/index.ts` | `timezone: "Z"` only affects mysql2's JS Date conversion. MySQL `DEFAULT CURRENT_TIMESTAMP` uses the **session** `time_zone`, i.e. the server's zone, so DB-written `created_at` and app-written dates would disagree. | `SET time_zone = '+00:00'` on every new pool connection. Integration test: an insert's `created_at` is within seconds of `new Date()` in UTC. |
+| F-2 | `src/db/index.ts` | A new pool is created on every dev hot reload, which exhausts Hostinger's connection cap during local dev. The manual URL parsing drops query params. | `globalThis` singleton; keep the parsing but pass through `?ssl`/`charset` if present. |
+| F-3 | `CLAUDE.md` §4, `INTEGRATIONS.md` §2.4 | `idempotency_key = sha256(phone \| hour)` is **UNIQUE** in `leads`. A person who sends a financing lead and then an insurance lead in the same hour **loses the second one**, both in our DB and in the CRM. | **ADR-25:** key = `sha256(phone_e164 + "\|" + type + "\|" + YYYY-MM-DD-HH)`. Still 64 chars, still stable across retries. Update `CLAUDE.md`, `INTEGRATIONS.md`, `TEST_PLAN.md` §2.3. |
+| F-4 | `src/app/layout.tsx` | The site description says "comprá, vendé y **financiá tu moto**", which implies the site grants credit (`LEGAL_AND_COMPLIANCE.md` §3.1 forbids it). No `metadataBase`, so OG URLs come out relative. | Neutral copy (e.g. "Motos nuevas y usadas en Paraguay, con precios en guaraníes y cuotas informadas por cada comercio."); `metadataBase` from `SITE_URL`. |
+| F-5 | `src/lib/format.ts` | `toLocaleString("es-PY")` depends on the server's ICU data. Spanish CLDR can skip grouping on 4-digit numbers (`5000`). Correct here, but not guaranteed on the Hostinger Node build. | A deterministic dot-grouping formatter, with no ICU dependency. The same tests pass. |
+| F-6 | `src/lib/hash.ts` | Plain `sha256(value\|salt)`. For IP hashing the correct primitive is keyed HMAC. | `createHmac("sha256", salt)`. No stored hashes exist yet, so there's no migration cost. |
+| F-7 | `src/lib/phone.ts` | Only mobiles (`9XXXXXXXX`) are accepted. Dealers often have landlines (`021 …`), and G-3's "solo llamadas" needs them. | `normalizePhone(raw, { allowLandline })`: mobiles only by default; landlines allowed for `contact_whatsapp=false` and dealer contact. `isWhatsAppCapable()` helper. Tests. |
+| F-8 | `src/lib/slug.ts` | No reserved slugs (G-15). `slugifyUnique` takes a sync callback, but DB checks are async. The diacritics regex uses literal combining chars (fragile in editors). | Reserved list + `slugifyUniqueAsync`, `\u0300-\u036f` escape, `publicRef()` generator (8 chars, no ambiguous `0/O/1/I/L`, stored uppercase, lowercase in URLs). |
+| F-9 | `src/lib/storage/local.ts` | `url()` returns `/uploads/…` but nothing serves it (G-22). Writes are not atomic. | `url()` → `/media/…` (A3 builds the route); write to tmp + rename. |
+| F-10 | `src/db/seed-data/models.ts` | **Every Honda model is inactive**: hondamotos.com.py blocked the earlier research session. Honda is very likely the largest brand in the entry segment `[VERIFICAR]`. Category names "Naked" and "Cub" are unvalidated English terms. | R0 (research) re-verifies Honda and the whole catalog from sources. The vocabulary goes on the owner's dealer-call checklist. |
+| F-11 | `drizzle/0000_*.sql` | FULLTEXT index hand-added (fine). InnoDB's default `innodb_ft_min_token_size=3` means queries like "cg" never match. | Documented for A2: short tokens fall back to `LIKE` on title/model. |
+| F-12 | Global `SITE_NOINDEX` | Also blocks guides and static pages, which could start earning trust while inventory grows (thin programmatic pages are already gated by thresholds). | **ADR-26 (owner decides later):** `SITE_NOINDEX` accepts `true \| content \| false`. `content` = guides + static pages indexable, everything else noindex. Default stays `true`. A0 implements the three modes. |
+| F-13 | Repo | No `error.tsx` for route-level errors, no `engines`, no `typecheck`/`verify`/`db:migrate` scripts, no hooks, no MySQL in cloud sessions. | A0 per §5.2. |
+
+Docs (PRs #1–#3) were already audited in §2 below. Beyond that list, their strategy holds up: dealer-first, financing wedge, threshold-gated programmatic SEO, and no fabrication are the right calls for this market.
 
 ---
 
@@ -339,3 +367,5 @@ A rough estimate from the conthtml benchmark (~$20 per Opus/Sonnet phase that sh
 | Phase | PR | Log |
 |---|---|---|
 | (empty until A0) | | |
+
+PR for this audit + A0 prompt: see git history of `prompts/opus-A0-foundation.md`.
