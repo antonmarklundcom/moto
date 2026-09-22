@@ -17,6 +17,37 @@
 //   búsqueda genéricos (mercados regionales, no una página de hondamotos.com.py
 //   confirmada — el sitio bloqueó el acceso directo). Quedan inactivos hasta
 //   confirmar contra el catálogo vigente de hondamotos.com.py.
+//
+// Re-verificación R0 (acceso 2026-09-22, fuentes completas y access dates en
+// docs/research/catalog.md — hondamotos.com.py/honda.com.py siguen bloqueados
+// para esta sesión, ver nota en brands.ts):
+// - Honda XR 150L: avisos publicados por "DIESA S.A." (distribuidor oficial)
+//   en clasipar.paraguay.com, ej. "MOTOCICLETA HONDA XR150L 0KM - DIESA S.A"
+//   (#1153760) — descrita ahí como Enduro/Cross/Trial, monocilíndrica 4T
+//   refrigerada por aire, 150 cc. Reemplaza la nota [VERIFICAR] del genérico
+//   "XR 150": se confirma el nombre comercial exacto vendido en Paraguay.
+// - Honda Wave 110S: mismo canal, avisos "DIESA S.A." listan "WAVE110S".
+// - Honda CG 110, XR 190, XR 250 Tornado, CRF 250F: avisos "DIESA S.A." en
+//   clasipar.paraguay.com (paquete de financiación "10% de entrega + 36 cuotas
+//   sin interés" citado en los mismos avisos). No se confirmó un modelo
+//   "CG 150 Titan" ni "CB 125" en estos avisos — quedan inactivos (ver abajo).
+// - Honda Rebel 500, NX500, X-ADV 750: lanzamiento oficial de Diesa S.A. en
+//   Paraguay, abc.com.py "Lanzan Honda Rebel 500, NX500 y X-ADV 750"
+//   (2025-04-12) y lanacion.com.py "Diesa presentó las nuevas motocicletas
+//   Rebel 500, NX500 y X-ADV 750" (2025-04-04).
+// - Honda CB 500X: mencionado junto a CRF250F en los mismos avisos "DIESA
+//   S.A." de clasipar.paraguay.com como parte del catálogo Honda Paraguay.
+// - Kenton GL 150, GL 150 Pro, GTR 150, GTR 150 LTD, Blitz 110: páginas de
+//   producto propias en kenton.com.py (kenton.com.py/moto/gl-150,
+//   /gl-150-pro, /gtr-150, /gtr-150-ltd, /blitz-110-dlx, /blitz-110-se,
+//   /blitz-110-automatic), con ficha técnica completa. Fuente de mayor
+//   confianza que la ya usada para Classic 125 (sólo un retailer).
+// - Star 150, SMX 150: páginas de producto propias en star.com.py
+//   (star.com.py/producto/SK150-CG-CKD/motocicleta-star-150-150cc y
+//   star.com.py/producto/SMX150-CKD/smx-150cc).
+//
+// Mapeo propuesto modelo → categoría (categoryId no lo asigna este seed —
+// scripts/ no es Owns de R0): ver la tabla en docs/research/catalog.md.
 
 export type ModelSeed = {
   brandSlug: string;
@@ -51,32 +82,57 @@ export const modelSeeds: ModelSeed[] = [
   // TVS — confirmado en la página de producto de TVS Paraguay
   { brandSlug: "tvs", name: "Raider 125", slug: "raider-125", engineCc: 125, isActive: true },
 
-  // Kenton — confirmado en un retailer paraguayo (digi.com.py)
+  // Kenton — Classic 125 confirmado en un retailer paraguayo (digi.com.py);
+  // el resto (R0) confirmado directo en páginas de producto de kenton.com.py.
   { brandSlug: "kenton", name: "Classic 125", slug: "classic-125", engineCc: 125, isActive: true },
+  { brandSlug: "kenton", name: "GL 150", slug: "gl-150", engineCc: 150, isActive: true },
+  { brandSlug: "kenton", name: "GL 150 Pro", slug: "gl-150-pro", engineCc: 150, isActive: true },
+  { brandSlug: "kenton", name: "GTR 150", slug: "gtr-150", engineCc: 150, isActive: true },
+  { brandSlug: "kenton", name: "GTR 150 LTD", slug: "gtr-150-ltd", engineCc: 150, isActive: true },
+  { brandSlug: "kenton", name: "Blitz 110", slug: "blitz-110", engineCc: 110, isActive: true },
 
-  // Honda — sin confirmación directa contra hondamotos.com.py (403 al acceder)
+  // Star (R0) — confirmado en páginas de producto propias de star.com.py
+  { brandSlug: "star", name: "Star 150", slug: "star-150", engineCc: 150, isActive: true },
+  { brandSlug: "star", name: "SMX 150", slug: "smx-150", engineCc: 150, isActive: true },
+
+  // Honda — re-verificado en R0 vía avisos "DIESA S.A." (distribuidor
+  // oficial) en clasipar.paraguay.com y prensa paraguaya. hondamotos.com.py
+  // y honda.com.py siguen bloqueados para esta sesión (ver nota arriba).
+  {
+    brandSlug: "honda",
+    name: "XR 150L",
+    slug: "xr-150",
+    engineCc: 150,
+    isActive: true,
+  },
+  {
+    brandSlug: "honda",
+    name: "Wave 110S",
+    slug: "wave",
+    engineCc: 110,
+    isActive: true,
+  },
+  { brandSlug: "honda", name: "CG 110", slug: "cg-110", engineCc: 110, isActive: true },
+  { brandSlug: "honda", name: "XR 190", slug: "xr-190", engineCc: 190, isActive: true },
+  { brandSlug: "honda", name: "XR 250 Tornado", slug: "xr-250-tornado", engineCc: 250, isActive: true },
+  { brandSlug: "honda", name: "CRF 250F", slug: "crf-250f", engineCc: 250, isActive: true },
+  { brandSlug: "honda", name: "CB 500X", slug: "cb-500x", engineCc: 500, isActive: true },
+  {
+    brandSlug: "honda",
+    name: "Rebel 500",
+    slug: "rebel-500",
+    engineCc: 500,
+    isActive: true,
+  },
+  { brandSlug: "honda", name: "NX500", slug: "nx500", engineCc: 500, isActive: true },
+  { brandSlug: "honda", name: "X-ADV 750", slug: "x-adv-750", engineCc: 750, isActive: true },
   {
     brandSlug: "honda",
     name: "CG 150 Titan",
     slug: "cg-150-titan",
     engineCc: 150,
     isActive: false,
-    note: "[VERIFICAR: confirmar contra el catálogo vigente de hondamotos.com.py]",
-  },
-  {
-    brandSlug: "honda",
-    name: "XR 150",
-    slug: "xr-150",
-    engineCc: 150,
-    isActive: false,
-    note: "[VERIFICAR: confirmar contra el catálogo vigente de hondamotos.com.py]",
-  },
-  {
-    brandSlug: "honda",
-    name: "Wave",
-    slug: "wave",
-    isActive: false,
-    note: "[VERIFICAR: confirmar contra el catálogo vigente de hondamotos.com.py, incluida la cilindrada exacta vendida en Paraguay]",
+    note: "[VERIFICAR: no aparece en los avisos \"DIESA S.A.\" relevados en R0 (que sí confirman CG 110); la nomenclatura \"Titan\" es de Argentina/Brasil — confirmar si DIESA vende alguna variante \"Titan\" en Paraguay o si el nombre correcto es simplemente CG 110/CG 125]",
   },
   {
     brandSlug: "honda",
@@ -84,6 +140,6 @@ export const modelSeeds: ModelSeed[] = [
     slug: "cb-125",
     engineCc: 125,
     isActive: false,
-    note: "[VERIFICAR: confirmar contra el catálogo vigente de hondamotos.com.py]",
+    note: "[VERIFICAR: no aparece en los avisos \"DIESA S.A.\" relevados en R0 (que sí confirman CB 500X); confirmar si Honda Paraguay vende un CB de cilindrada de entrada distinto de CB 500X]",
   },
 ];
