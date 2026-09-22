@@ -9,7 +9,7 @@ MySQL 8 + Drizzle ORM (`drizzle-orm/mysql2`). Este documento es normativo: el es
 - Toda tabla lleva `created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP` y `updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP`.
 - Borrado lógico donde se indica: `deleted_at DATETIME NULL`. Toda consulta pública filtra `deleted_at IS NULL`.
 - Charset `utf8mb4`, collation `utf8mb4_unicode_ci`.
-- Fechas en UTC (`timezone: "Z"` en el pool). La presentación convierte a `America/Asuncion`.
+- Fechas en UTC: `timezone: "Z"` en el pool (conversión de `Date` en mysql2) **y** `SET time_zone = '+00:00'` en cada conexión, para que `DEFAULT CURRENT_TIMESTAMP` también escriba UTC aunque el servidor MySQL esté en otra zona (F-1, `src/db/index.ts`). La presentación convierte a `America/Asuncion` (UTC-3 todo el año desde 2024).
 - Dinero: **entero en guaraníes** (ADR-06). Nunca `FLOAT`, nunca `DECIMAL` con centavos.
 - Teléfonos: se guardan normalizados en E.164 (`+595981123456`) en `phone_e164`, y el original tal como lo tipeó el usuario en `phone_raw`. La normalización ocurre en el servidor, nunca en el cliente.
 - Slugs: `VARCHAR(255)`, únicos donde se indique, generados desde el nombre + desambiguador numérico si colisiona. Un slug publicado **nunca** cambia (rompe URLs y SEO); si el nombre cambia, el slug queda.
@@ -30,11 +30,16 @@ users ────────────────────────�
 
 featured_purchases ──> listings
 dealer_plans ──> dealers
+pending_uploads ──> listings (claimed_listing_id, al enviar)
 ad_placements
 posts
 model_suggestions
 activity_log
+auth_attempts
+job_runs
 ```
+
+Migraciones: `0000` (esquema inicial) y `0001` (delta ADR-17: columnas marcadas **ADR-17** abajo y las tablas §2.15–§2.17).
 
 ---
 
@@ -83,6 +88,7 @@ Existe desde la primera migración aunque en fase 1 sólo haya admins (ADR-05). 
 | `authorization_date` | DATE | sí | |
 | `authorization_channel` | VARCHAR(50) | sí | `whatsapp \| email \| papel` |
 | `free_until` | DATE | sí | Fin del período gratuito de 12 meses |
+| `listing_ttl_days` | SMALLINT UNSIGNED | sí | **ADR-17 (G-6).** Vigencia de sus publicaciones en días. NULL → 60. A los comercios nuevos se les carga 30: su stock no reconfirmado en 30 días se baja (`DATA_SEEDING.md` §4) |
 | `deleted_at` | DATETIME | sí | |
 
 **Índices:** `UNIQUE(slug)`; `INDEX(status)`; `INDEX(city_id)` — página de ciudad lista comercios locales.
@@ -204,6 +210,10 @@ Catálogo normalizado. Texto libre prohibido (ADR-11).
 | `contact_phone_e164` | VARCHAR(20) | no | Destino del WhatsApp |
 | `contact_phone_raw` | VARCHAR(30) | no | |
 | `contact_name` | VARCHAR(200) | sí | |
+| `contact_whatsapp` | BOOLEAN | no | **ADR-17 (G-3).** Default `true`. `false` = "solo llamadas": el CTA pasa a "Llamar" y el teléfono puede ser fijo |
+| `documentation_status` | ENUM | sí | **ADR-17 (G-4).** `al_dia \| transferencia_pendiente \| no_declara`. Obligatorio en usadas; NULL sólo en 0 km. Etiquetas visibles `[VALIDAR con un comercio]` |
+| `external_ref` | VARCHAR(100) | sí | **ADR-17 (G-5).** Referencia del comercio para re-importar su stock sin duplicar |
+| `manage_token_hash` | CHAR(64) | sí | **ADR-17 (G-1).** SHA-256 del token del enlace privado `/mi-aviso/<token>`. El token se muestra una vez (en el mensaje de aprobación) y nunca se guarda en claro. Rotable por el admin |
 | `status` | ENUM | no | Ver §3. Default `draft` |
 | `rejection_reason_code` | VARCHAR(50) | sí | Ver `TRUST_AND_SAFETY.md` |
 | `rejection_note` | TEXT | sí | |
@@ -234,9 +244,13 @@ Catálogo normalizado. Texto libre prohibido (ADR-11).
 | `INDEX(status, price_gs)` | Filtro y orden por precio |
 | `INDEX(status, expires_at)` | Job de vencimiento |
 | `INDEX(model_id, status, price_gs)` | La consulta de página de modelo con orden por precio |
-| `FULLTEXT(title, description)` | Búsqueda por texto libre. `MATCH ... AGAINST` en modo natural |
+| `FULLTEXT(title, description)` | Búsqueda por texto libre. `MATCH ... AGAINST` en modo natural. Agregado a mano en `0000` (drizzle no lo modela). Con `innodb_ft_min_token_size=3`, términos de menos de 3 letras ("cg") no matchean: la búsqueda cae a `LIKE` sobre título/modelo (F-11) |
+| `UNIQUE(dealer_id, external_ref)` | **ADR-17.** Importación idempotente (G-5). Varios NULL no chocan |
+| `UNIQUE(manage_token_hash)` | **ADR-17.** Resolver `/mi-aviso/<token>` por hash |
 
 **Nota de rendimiento:** la búsqueda facetada combina varios de estos filtros. Empezar con estos índices, medir con `EXPLAIN` sobre datos reales y agregar índices compuestos según el patrón real de uso. **Agregar un índice no requiere escalar; agregar una columna sí.**
+
+**Regla 0 km (G-12, sin esquema):** una publicación 0 km = una por comercio × modelo/versión; `year` es opcional en nuevas; la detección de duplicados por `content_hash` ignora las imágenes con `is_catalog_photo = true`.
 
 **Regla de integridad:** `price_gs` NULL exige `has_financing_only = true` y `installment_gs` NOT NULL. Validado en aplicación y en el formulario; MySQL no lo garantiza.
 
@@ -460,6 +474,60 @@ Se crea la tabla en la migración inicial; la funcionalidad llega en fase 3. Los
 
 ---
 
+### 2.15 `pending_uploads` — ADR-17 (G-2)
+
+Fotos subidas en `/publicar` antes de que exista la publicación (el paso 1 son las fotos, y `listing_images.listing_id` es NOT NULL). Al enviar el formulario, las filas del borrador pasan a `listing_images` y se marca `claimed_listing_id`. Un job diario borra filas y archivos no reclamados de más de 7 días.
+
+| Columna | Tipo | Null | Notas |
+|---|---|---|---|
+| `id` | BIGINT UNSIGNED | no | PK |
+| `draft_token_hash` | CHAR(64) | no | Hash del token del borrador (vive en el navegador del vendedor) |
+| `storage_path` | VARCHAR(500) | no | Ruta en la abstracción de almacenamiento (ADR-16) |
+| `width` / `height` | SMALLINT UNSIGNED | sí | |
+| `bytes` | INT UNSIGNED | sí | |
+| `content_hash` | CHAR(64) | no | SHA-256 |
+| `claimed_listing_id` | BIGINT UNSIGNED | sí | FK → `listings.id`. NULL mientras no se envió |
+| `created_at` / `updated_at` | DATETIME | no | |
+
+**Índices:** `INDEX(draft_token_hash, created_at)` — reclamar las fotos de un borrador; `INDEX(claimed_listing_id, created_at)` — purga de no reclamadas.
+
+---
+
+### 2.16 `auth_attempts` — ADR-17 (G-7)
+
+Intentos de login del admin, para el bloqueo de 5 fallos por IP y por cuenta (`ADMIN_SPEC.md` §1) persistente entre reinicios, sin Redis (ADR-04). Append-only; se purga a los 30 días.
+
+| Columna | Tipo | Null | Notas |
+|---|---|---|---|
+| `id` | BIGINT UNSIGNED | no | PK |
+| `email_hash` | CHAR(64) | sí | HMAC del email normalizado, nunca en claro |
+| `ip_hash` | CHAR(64) | sí | HMAC de la IP (`IP_HASH_SALT`) |
+| `succeeded` | BOOLEAN | no | |
+| `created_at` | DATETIME | no | |
+
+**Índices:** `INDEX(email_hash, created_at)`; `INDEX(ip_hash, created_at)` — contar fallos recientes por cuenta y por IP.
+
+---
+
+### 2.17 `job_runs` — ADR-17 (G-8), ADR-19
+
+Una fila por ejecución de un job programado (vencimiento, reintento de leads, fin de destacados, purgas). Es la auditoría ("¿corrió anoche?"), la señal de `/admin/salud` y el candado.
+
+| Columna | Tipo | Null | Notas |
+|---|---|---|---|
+| `id` | BIGINT UNSIGNED | no | PK |
+| `job` | VARCHAR(100) | no | `expire-listings`, `retry-leads`… |
+| `lock_key` | VARCHAR(100) | sí | UNIQUE. Vale `job` mientras corre y vuelve a NULL al terminar: una segunda ejecución simultánea choca con el índice. Si un proceso muere a mitad, el job libera candados de más de N minutos antes de intentar |
+| `status` | ENUM | no | `running \| succeeded \| failed`. Default `running` |
+| `started_at` | DATETIME | no | |
+| `finished_at` | DATETIME | sí | |
+| `detail_json` | JSON | sí | Conteos, errores |
+| `created_at` / `updated_at` | DATETIME | no | |
+
+**Índices:** `UNIQUE(lock_key)`; `INDEX(job, started_at)` — última ejecución de cada job; `INDEX(status, started_at)` — fallos recientes.
+
+---
+
 ## 3. Máquina de estados de `listings`
 
 ```
@@ -505,7 +573,7 @@ draft ──submit──> pending_review ──approve──> published ──> 
 - `published` exige: ≥ 1 imagen, precio o cuota, ciudad, marca, `model_id` no nulo, teléfono válido.
 - Un cambio de precio en una publicación `published` **no** vuelve a moderación, pero se registra.
 - Un cambio de fotos o de descripción en una publicación de particular **sí** vuelve a `pending_review` (evita el bait-and-switch post-aprobación).
-- `expires_at` por defecto: 60 días. Configurable por comercio.
+- `expires_at` por defecto: 60 días. Configurable por comercio (`dealers.listing_ttl_days`, ADR-17).
 
 ---
 

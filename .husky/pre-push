@@ -1,0 +1,3 @@
+# Puerta de calidad (BUILD_PLAN.md §4.15, G-27): sin GitHub Actions, el
+# control es local. Saltarlo con --no-verify sólo si el propietario lo pide.
+npm run verify

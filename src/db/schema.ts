@@ -92,6 +92,9 @@ export const dealers = mysqlTable(
     authorizationDate: date("authorization_date", { mode: "string" }),
     authorizationChannel: varchar("authorization_channel", { length: 50 }),
     freeUntil: date("free_until", { mode: "string" }),
+    // ADR-17 / G-6: vencimiento de sus publicaciones en días. NULL → 60 (el
+    // default general); a los comercios nuevos se les carga 30.
+    listingTtlDays: smallint("listing_ttl_days", { unsigned: true }),
     deletedAt: datetime("deleted_at", { mode: "date" }),
     ...timestamps,
   },
@@ -227,6 +230,14 @@ export const listingStatusEnum = [
   "rejected",
 ] as const;
 
+// ADR-17 / G-4: estado de documentación declarado. NULL sólo para 0 km.
+// Etiquetas visibles [VALIDAR con un comercio] antes de que salga el formulario.
+export const documentationStatusEnum = [
+  "al_dia",
+  "transferencia_pendiente",
+  "no_declara",
+] as const;
+
 export const listings = mysqlTable(
   "listings",
   {
@@ -268,6 +279,15 @@ export const listings = mysqlTable(
     contactPhoneE164: varchar("contact_phone_e164", { length: 20 }).notNull(),
     contactPhoneRaw: varchar("contact_phone_raw", { length: 30 }).notNull(),
     contactName: varchar("contact_name", { length: 200 }),
+    // ADR-17 / G-3: false = "solo llamadas"; el CTA pasa a "Llamar".
+    contactWhatsapp: boolean("contact_whatsapp").notNull().default(true),
+    // ADR-17 / G-4.
+    documentationStatus: mysqlEnum("documentation_status", documentationStatusEnum),
+    // ADR-17 / G-5: referencia del comercio para re-importar sin duplicar.
+    externalRef: varchar("external_ref", { length: 100 }),
+    // ADR-17 / G-1: hash SHA-256 del token del enlace privado /mi-aviso/<token>.
+    // El token se muestra una sola vez; nunca se guarda en claro.
+    manageTokenHash: char("manage_token_hash", { length: 64 }),
     status: mysqlEnum("status", listingStatusEnum).notNull().default("draft"),
     rejectionReasonCode: varchar("rejection_reason_code", { length: 50 }),
     rejectionNote: text("rejection_note"),
@@ -302,6 +322,8 @@ export const listings = mysqlTable(
     index("listings_status_price_idx").on(table.status, table.priceGs),
     index("listings_status_expires_idx").on(table.status, table.expiresAt),
     index("listings_model_status_price_idx").on(table.modelId, table.status, table.priceGs),
+    uniqueIndex("listings_dealer_external_ref_unique").on(table.dealerId, table.externalRef),
+    uniqueIndex("listings_manage_token_hash_unique").on(table.manageTokenHash),
   ],
 );
 
@@ -687,6 +709,86 @@ export const searchAlerts = mysqlTable(
 );
 
 // ---------------------------------------------------------------------------
+// 2.15 pending_uploads (ADR-17 / G-2)
+// ---------------------------------------------------------------------------
+
+// Fotos subidas antes de que exista la publicación (/publicar arranca por las
+// fotos). Al enviar el formulario pasan a listing_images y se marca
+// claimed_listing_id. Un job diario borra las no reclamadas de más de 7 días.
+export const pendingUploads = mysqlTable(
+  "pending_uploads",
+  {
+    id: bigint("id", { mode: "number", unsigned: true }).autoincrement().primaryKey(),
+    draftTokenHash: char("draft_token_hash", { length: 64 }).notNull(),
+    storagePath: varchar("storage_path", { length: 500 }).notNull(),
+    width: smallint("width", { unsigned: true }),
+    height: smallint("height", { unsigned: true }),
+    bytes: int("bytes", { unsigned: true }),
+    contentHash: char("content_hash", { length: 64 }).notNull(),
+    claimedListingId: bigint("claimed_listing_id", { mode: "number", unsigned: true }).references(
+      (): AnyMySqlColumn => listings.id,
+    ),
+    ...timestamps,
+  },
+  (table) => [
+    index("pending_uploads_draft_token_idx").on(table.draftTokenHash, table.createdAt),
+    index("pending_uploads_claimed_created_idx").on(table.claimedListingId, table.createdAt),
+  ],
+);
+
+// ---------------------------------------------------------------------------
+// 2.16 auth_attempts (ADR-17 / G-7)
+// ---------------------------------------------------------------------------
+
+// Intentos de login, para el bloqueo de 5 fallos por IP y por cuenta
+// (ADMIN_SPEC.md §1) sin Redis. Append-only; se purga a los 30 días.
+export const authAttempts = mysqlTable(
+  "auth_attempts",
+  {
+    id: bigint("id", { mode: "number", unsigned: true }).autoincrement().primaryKey(),
+    emailHash: char("email_hash", { length: 64 }),
+    ipHash: char("ip_hash", { length: 64 }),
+    succeeded: boolean("succeeded").notNull(),
+    createdAt: datetime("created_at", { mode: "date" })
+      .notNull()
+      .default(sql`CURRENT_TIMESTAMP`),
+  },
+  (table) => [
+    index("auth_attempts_email_created_idx").on(table.emailHash, table.createdAt),
+    index("auth_attempts_ip_created_idx").on(table.ipHash, table.createdAt),
+  ],
+);
+
+// ---------------------------------------------------------------------------
+// 2.17 job_runs (ADR-17 / G-8, ADR-19)
+// ---------------------------------------------------------------------------
+
+export const jobRunStatusEnum = ["running", "succeeded", "failed"] as const;
+
+// Una fila por ejecución de un job programado. Es la auditoría (¿corrió el
+// job?), la señal de /admin/salud y el candado: mientras corre, lock_key vale
+// el nombre del job y el UNIQUE impide una segunda ejecución simultánea; al
+// terminar vuelve a NULL (MySQL admite varios NULL en un UNIQUE).
+export const jobRuns = mysqlTable(
+  "job_runs",
+  {
+    id: bigint("id", { mode: "number", unsigned: true }).autoincrement().primaryKey(),
+    job: varchar("job", { length: 100 }).notNull(),
+    lockKey: varchar("lock_key", { length: 100 }),
+    status: mysqlEnum("status", jobRunStatusEnum).notNull().default("running"),
+    startedAt: datetime("started_at", { mode: "date" }).notNull(),
+    finishedAt: datetime("finished_at", { mode: "date" }),
+    detailJson: json("detail_json"),
+    ...timestamps,
+  },
+  (table) => [
+    uniqueIndex("job_runs_lock_key_unique").on(table.lockKey),
+    index("job_runs_job_started_idx").on(table.job, table.startedAt),
+    index("job_runs_status_started_idx").on(table.status, table.startedAt),
+  ],
+);
+
+// ---------------------------------------------------------------------------
 // Relaciones (para queries anidados con Drizzle; no afectan el DDL)
 // ---------------------------------------------------------------------------
 
@@ -722,6 +824,13 @@ export const leadsRelations = relations(leads, ({ one, many }) => ({
   listing: one(listings, { fields: [leads.listingId], references: [listings.id] }),
   dealer: one(dealers, { fields: [leads.dealerId], references: [dealers.id] }),
   deliveries: many(leadDeliveries),
+}));
+
+export const pendingUploadsRelations = relations(pendingUploads, ({ one }) => ({
+  claimedListing: one(listings, {
+    fields: [pendingUploads.claimedListingId],
+    references: [listings.id],
+  }),
 }));
 
 export const leadDeliveriesRelations = relations(leadDeliveries, ({ one }) => ({

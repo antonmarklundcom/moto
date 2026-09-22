@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { formatFinancing, formatGuaranies } from "./format";
+import { formatFinancing, formatGuaranies, groupThousands } from "./format";
 
 // TEST_PLAN.md §2 punto 1: "12500000 → 'Gs. 12.500.000'". Casos: cero, nulo,
 // números de 4 y 10 dígitos.
@@ -52,5 +52,18 @@ describe("formatFinancing", () => {
     expect(() =>
       formatFinancing({ downPaymentGs: 100, installmentCount: 0, installmentGs: 100 }),
     ).toThrow();
+  });
+});
+
+describe("groupThousands (F-5: sin depender de ICU)", () => {
+  it.each([
+    [0, "0"],
+    [999, "999"],
+    [1000, "1.000"],
+    [5000, "5.000"],
+    [12_500_000, "12.500.000"],
+    [9_007_199_254_740_991, "9.007.199.254.740.991"],
+  ])("%d → %s", (input, expected) => {
+    expect(groupThousands(input)).toBe(expected);
   });
 });

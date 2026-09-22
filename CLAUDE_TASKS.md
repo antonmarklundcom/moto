@@ -1,5 +1,7 @@
 # CLAUDE_TASKS.md
 
+> **Fase 1 en adelante:** el orden de trabajo, las ramas (`phase/<id>`) y el protocolo de escalado los fija `BUILD_PLAN.md` §4–§5 (ADR-18), que reemplaza el flujo "una tarea = un PR" de abajo. Los números T-xxx siguen valiendo como referencia de criterios de aceptación dentro de cada fase.
+
 Tareas ejecutables. **Una tarea = un PR.** Escrito para una sesión Sonnet 5 / Codex nueva, sin memoria de la planificación, con acceso sólo a este repositorio.
 
 ## Cómo usar este archivo

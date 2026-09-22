@@ -152,13 +152,16 @@ Cola por estado y prioridad. Muestra la publicación, el motivo, el detalle y la
 
 ---
 
-## 11. Configuración del sitio (sólo admin)
+## 11. Configuración del sitio (sólo admin, sólo lectura — ADR-22)
 
-- **`SITE_NOINDEX`: interruptor visible con el conteo actual de publicaciones vivas al lado**, para que quitarlo sea una decisión informada y deliberada (`DATA_SEEDING.md` §3).
-- Número de WhatsApp general del sitio.
-- Días de vigencia por defecto de las publicaciones.
+La configuración vive en variables de entorno del slot de Hostinger, que son la única fuente de verdad; no hay tabla `site_settings`. El admin la **muestra** y explica cómo cambiarla, no la edita.
+
+- **`SITE_NOINDEX`: modo actual (`true` / `content` / `false`, ADR-26) con el conteo actual de publicaciones vivas y de comercios al lado**, y los pasos exactos para cambiarlo en hPanel (variable + rebuild), para que quitarlo sea una decisión informada y deliberada (`DATA_SEEDING.md` §3).
+- Número de WhatsApp general del sitio (`WHATSAPP_SITE_NUMBER`).
+- Días de vigencia por defecto de las publicaciones (60; por comercio en `dealers.listing_ttl_days`, que sí se edita en la ficha del comercio).
 - Umbrales de indexación (lectura; cambiarlos exige escalar).
-- Textos legales.
+- Estado de las integraciones: si `VENDERCRM_URL`/`VENDERCRM_API_KEY` están cargadas (nunca el valor de la key).
+- **Textos legales: no se editan desde el admin.** Son archivos de contenido revisados que sólo cambia el propietario después de la revisión del abogado (`LEGAL_AND_COMPLIANCE.md` §10, corrección C-5).
 
 ---
 
