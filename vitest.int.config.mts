@@ -11,6 +11,9 @@ export default defineConfig({
       "server-only": fileURLToPath(new URL("./node_modules/server-only/empty.js", import.meta.url)),
     },
   },
+  // tsconfig tiene jsx: "preserve" (lo exige Next); las pruebas que
+  // renderizan componentes necesitan que Vite transforme el JSX.
+  oxc: { jsx: { runtime: "automatic" } },
   test: {
     environment: "node",
     include: ["src/**/*.int.test.ts", "scripts/**/*.int.test.ts"],
