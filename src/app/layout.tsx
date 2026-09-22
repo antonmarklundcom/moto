@@ -7,8 +7,10 @@ import "./globals.css";
 // páginas estáticas lo sobrescriben en su propia metadata usando
 // globalIndexingAllows("content"). Falla cerrado: sin la variable, noindex.
 //
-// Ojo: en páginas prerenderadas el valor se fija en el build. Cambiar
-// SITE_NOINDEX en el panel exige un rebuild (DECISIONS.md ADR-26).
+// Las rutas públicas son dinámicas (src/app/(public)/layout.tsx llama a
+// connection()): SITE_NOINDEX se lee al servir, así que cambiarlo en el panel
+// sólo exige reiniciar la app. Una página que se prerenderice fija el valor
+// en el build (DECISIONS.md ADR-26).
 export function generateMetadata(): Metadata {
   return {
     metadataBase: new URL(env.siteUrl()),

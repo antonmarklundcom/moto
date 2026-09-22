@@ -9,7 +9,7 @@ import { paths } from "@/lib/seo/routes";
 // contenido según SITE_NOINDEX). B10 lo reemplaza con el contenido real.
 export function generateMetadata(): Metadata {
   return contentPageMetadata({
-    title: "Cómo funciona moto.com.py",
+    title: "Cómo funciona",
     description:
       "Cómo buscar motos nuevas y usadas en Paraguay, ver precios en guaraníes y cuotas informadas por cada comercio, y escribir al vendedor por WhatsApp.",
     canonical: paths.howItWorks,
