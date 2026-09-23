@@ -21,7 +21,7 @@ export default async function Page() {
   return (
     <div className={container}>
       <Breadcrumbs items={[{ name: "Guías", href: paths.guides }]} />
-      <h1 className="mt-2 text-2xl font-bold">Guías para comprar y vender motos</h1>
+      <h1 className="mt-2 text-2xl font-extrabold tracking-tight text-slate-900 sm:text-3xl">Guías para comprar y vender motos</h1>
       {guides.length === 0 ? (
         <div className="mt-4 max-w-prose">
           <p>Todavía no publicamos guías: las estamos revisando para que no tengan datos viejos ni inventados.</p>
@@ -41,7 +41,7 @@ export default async function Page() {
         <ul className="mt-4 flex max-w-prose flex-col gap-5">
           {guides.map((g) => (
             <li key={g.slug}>
-              <h2 className="text-lg font-semibold">
+              <h2 className="text-xl font-bold tracking-tight text-slate-900">
                 <Link href={paths.guide(g.slug)} className={linkClass}>
                   {g.title}
                 </Link>

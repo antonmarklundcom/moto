@@ -1,9 +1,9 @@
-import { focusRing, secondaryButton } from "@/components/public/styles";
+import { fieldClass, focusRing, secondaryButton } from "@/components/public/styles";
 import { REPORT_REASONS } from "./rules";
 
 // Denuncia (PRODUCT_SPEC.md §2.4): discreta, sin registro, teléfono opcional.
 // Formulario común (POST /api/reportes → 303 de vuelta): funciona sin JS.
-const field = `min-h-11 w-full rounded border border-neutral-500 bg-white px-3 ${focusRing}`;
+const field = fieldClass;
 
 export function ReportForm({ publicRef, path, result }: { publicRef: string; path: string; result: "ok" | "error" | null }) {
   return (

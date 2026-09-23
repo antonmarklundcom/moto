@@ -20,7 +20,7 @@ export default function Page() {
   return (
     <div className={container}>
       <Breadcrumbs items={[{ name: "Términos y condiciones", href: paths.terms }]} />
-      <h1 className="mt-2 text-2xl font-bold">Términos y condiciones</h1>
+      <h1 className="mt-2 text-2xl font-extrabold tracking-tight text-slate-900 sm:text-3xl">Términos y condiciones</h1>
       <p className="mt-3 max-w-prose">Texto en revisión legal. Lo publicamos apenas esté listo.</p>
       <p className="mt-2 max-w-prose">
         Si tenés una consulta mientras tanto,{" "}

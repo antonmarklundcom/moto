@@ -70,7 +70,7 @@ export default async function Page(props: Props) {
           department: dealer.department,
         })}
       />
-      <h1 className="mt-2 text-2xl font-bold">{dealer.name}</h1>
+      <h1 className="mt-2 text-2xl font-extrabold tracking-tight text-slate-900 sm:text-3xl">{dealer.name}</h1>
       <p className="mt-1 text-neutral-800">
         {dealer.address ? `${dealer.address}, ` : ""}
         {dealer.cityName} · {d.live === 1 ? "1 moto publicada" : `${groupThousands(d.live)} motos publicadas`}
@@ -87,7 +87,7 @@ export default async function Page(props: Props) {
         </a>
       </p>
       <section aria-labelledby="stock" className="mt-8">
-        <h2 id="stock" className="text-lg font-semibold">
+        <h2 id="stock" className="text-xl font-bold tracking-tight text-slate-900">
           Motos de {dealer.name}
         </h2>
         {search.items.length ? (

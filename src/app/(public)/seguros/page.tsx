@@ -24,7 +24,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ e
   return (
     <div className={container}>
       <Breadcrumbs items={[{ name: "Seguros", href: paths.insurance }]} />
-      <h1 className="mt-2 text-2xl font-bold">Seguro para tu moto</h1>
+      <h1 className="mt-2 text-2xl font-extrabold tracking-tight text-slate-900 sm:text-3xl">Seguro para tu moto</h1>
       <p className="mt-2 max-w-prose">
         Contanos qué moto tenés y te derivamos con una aseguradora para que te cotice. Nosotros no vendemos seguros ni fijamos precios: te ponemos
         en contacto.

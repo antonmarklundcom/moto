@@ -21,7 +21,7 @@ export default function ComoFuncionaPage() {
   return (
     <div className={container}>
       <Breadcrumbs items={[{ name: "Cómo funciona", href: paths.howItWorks }]} />
-      <h1 className="mt-2 text-2xl font-bold">Cómo funciona</h1>
+      <h1 className="mt-2 text-2xl font-extrabold tracking-tight text-slate-900 sm:text-3xl">Cómo funciona</h1>
       <p className="mt-3 max-w-prose">
         moto.com.py junta en un solo lugar motos 0 km y usadas que publican comercios y particulares de Paraguay. No vendemos motos ni cobramos por la compra: te conectamos con quien la vende.
       </p>

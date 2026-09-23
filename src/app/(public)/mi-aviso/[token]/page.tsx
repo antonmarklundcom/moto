@@ -3,7 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { AddPhotos } from "@/components/publish/add-photos";
 import { managedListing } from "@/components/publish/manage";
-import { container, focusRing, linkClass, primaryButton, secondaryButton } from "@/components/public/styles";
+import { container, fieldClass, focusRing, linkClass, primaryButton, secondaryButton } from "@/components/public/styles";
 import { formatDatePy } from "@/lib/import/messages";
 import { paths } from "@/lib/seo/routes";
 import { manageEditAction, manageStateAction } from "./actions";
@@ -26,7 +26,7 @@ const ACTIONS: Record<string, Array<[string, string]>> = {
   expired: [["renew", "Renovar"]],
   sold: [["renew", "Publicarla de nuevo"]],
 };
-const field = `min-h-11 w-full rounded border border-neutral-500 bg-white px-3 ${focusRing}`;
+const field = fieldClass;
 
 export default async function Page({ params, searchParams }: { params: Promise<{ token: string }>; searchParams: Promise<{ ok?: string; error?: string }> }) {
   const { token } = await params;
@@ -74,7 +74,7 @@ export default async function Page({ params, searchParams }: { params: Promise<{
       {l.status !== "rejected" ? (
         <form action={manageEditAction} className="mt-8 flex max-w-xl flex-col gap-3">
           <input type="hidden" name="token" value={decodeURIComponent(token)} />
-          <h2 className="text-lg font-semibold">Editar</h2>
+          <h2 className="text-xl font-bold tracking-tight text-slate-900">Editar</h2>
           <p className="text-sm text-neutral-700">Cambiar el precio se aplica enseguida. Si cambiás la descripción o las fotos, la revisamos de nuevo antes de mostrarla.</p>
           <label className="flex flex-col gap-1">
             <span className="font-medium">Precio de contado (Gs.)</span>

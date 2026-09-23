@@ -38,7 +38,7 @@ export function FinancingCompare({ offers, modelName, headingLevel = 2 }: { offe
     const o = offers[0];
     return (
       <section aria-label={`Oferta de ${modelName}`} className="rounded-lg border border-neutral-300 p-4">
-        <Heading className="text-lg font-semibold">Oferta de un comercio</Heading>
+        <Heading className="text-xl font-bold tracking-tight text-slate-900">Oferta de un comercio</Heading>
         <p className="mt-1 text-sm text-neutral-700">Por ahora un solo comercio publica la {modelName} con precio. Cuando haya más, las comparamos acá.</p>
         <dl className="mt-3 grid grid-cols-[max-content_1fr] gap-x-4 gap-y-1">
           <dt className="text-neutral-700">Comercio</dt>
@@ -61,7 +61,7 @@ export function FinancingCompare({ offers, modelName, headingLevel = 2 }: { offe
   }
   return (
     <section aria-label={`Comparar ${modelName} entre comercios`} className="rounded-lg border border-neutral-300 p-4">
-      <Heading className="text-lg font-semibold">Comparar entre comercios</Heading>
+      <Heading className="text-xl font-bold tracking-tight text-slate-900">Comparar entre comercios</Heading>
       <p className="mt-1 text-sm text-neutral-700">
         {offers.length} comercios publican la {modelName}. Ordenado por cuota informada. Los montos los informa cada comercio: no los calculamos ni
         aprobamos créditos.

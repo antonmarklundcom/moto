@@ -14,7 +14,7 @@ import { SkipLink } from "./skip-link";
 export function PublicShell({ children }: { children: React.ReactNode }) {
   const siteUrl = env.siteUrl();
   return (
-    <div className="flex min-h-dvh flex-col bg-white text-neutral-900">
+    <div className="flex min-h-dvh flex-col bg-slate-50 text-slate-900 antialiased">
       <SkipLink />
       <SiteHeader />
       <main id="contenido" tabIndex={-1} className="flex-1 focus:outline-none">

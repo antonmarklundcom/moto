@@ -1,15 +1,17 @@
 import { paths } from "@/lib/seo/routes";
-import { focusRing, primaryButton, secondaryButton } from "@/components/public/styles";
+import { fieldClass, labelClass as sharedLabel, focusRing, primaryButton, secondaryButton, surface } from "@/components/public/styles";
 import type { ListingCondition, ParsedSearchParams } from "@/lib/listings/filters";
 import type { Option } from "./data";
 
 // Filtros de PRODUCT_SPEC.md §3.2 como formulario GET a /motos: funciona sin
 // JS. /motos pasa las facetas que tienen página propia a la ruta limpia
 // (`?marca=honda` → `/motos/honda`) y deja el resto en el query string.
-// Entrega y cuota máximas van a la vista, no escondidas (diferencial).
+// Entrega y cuota máximas van a la vista, no escondidas (diferencial). En
+// móvil sólo lo principal ocupa la primera pantalla (E1): tipo, condición y
+// precio pasan a "Más filtros", que se abre solo si alguno está aplicado.
 
-const field = `min-h-11 w-full rounded border border-neutral-500 bg-white px-3 ${focusRing}`;
-const labelClass = "flex flex-col gap-1 text-sm font-medium text-neutral-900";
+const field = fieldClass;
+const labelClass = sharedLabel;
 
 const SORT_OPTIONS: ReadonlyArray<Option> = [
   { value: "recientes", label: "Más recientes" },
@@ -55,31 +57,31 @@ export function FilterForm({
 }) {
   const f = parsed.filters;
   const cc = f.ccMin !== undefined || f.ccMax !== undefined ? (f.ccMin === f.ccMax ? String(f.ccMin) : `${f.ccMin ?? ""}-${f.ccMax ?? ""}`) : "";
-  const moreOpen = Boolean(f.yearMin || f.kmMax || cc || f.q || f.priceMin);
+  const moreOpen = Boolean(f.yearMin || f.kmMax || cc || f.q || f.priceMin || f.priceMax || facets.category || facets.condition);
   return (
-    <form method="get" action={paths.motos} role="search" aria-label="Filtrar motos" className="flex flex-col gap-3 rounded-lg border border-neutral-300 bg-neutral-50 p-3">
+    <form method="get" action={paths.motos} role="search" aria-label="Filtrar motos" className={`${surface} flex flex-col gap-3 p-4`}>
       <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-        <Select name="marca" label="Marca" value={facets.brand} options={options.brands} all="Todas" />
-        {options.models.length ? <Select name="modelo" label="Modelo" value={facets.model} options={options.models} all="Todos" /> : null}
-        <Select name="tipo" label="Tipo" value={facets.category} options={options.categories} all="Todos" />
-        <Select name="ciudad" label="Ciudad" value={facets.city} options={options.cities} all="Todo el país" />
-        <Select
-          name="condicion"
-          label="Condición"
-          value={facets.condition ? (facets.condition === "new" ? "nueva" : "usada") : undefined}
-          options={[
-            { value: "nueva", label: "0 km" },
-            { value: "usada", label: "Usadas" },
-          ]}
-          all="Nuevas y usadas"
-        />
         <Amount name="cuota_max" label="Cuota máxima (Gs.)" value={f.installmentMax} placeholder="600.000" />
         <Amount name="entrega_max" label="Entrega máxima (Gs.)" value={f.downPaymentMax} placeholder="2.000.000" />
-        <Amount name="precio_max" label="Precio máximo (Gs.)" value={f.priceMax} placeholder="15.000.000" />
+        <Select name="marca" label="Marca" value={facets.brand} options={options.brands} all="Todas" />
+        {options.models.length ? <Select name="modelo" label="Modelo" value={facets.model} options={options.models} all="Todos" /> : null}
+        <Select name="ciudad" label="Ciudad" value={facets.city} options={options.cities} all="Todo el país" />
       </div>
-      <details open={moreOpen}>
-        <summary className={`min-h-11 cursor-pointer py-2 text-sm font-medium ${focusRing}`}>Más filtros</summary>
-        <div className="grid grid-cols-2 gap-3 pt-2 md:grid-cols-4">
+      <details open={moreOpen} className="rounded-lg border border-slate-200 px-3">
+        <summary className={`min-h-11 cursor-pointer py-3 text-sm font-semibold text-slate-900 ${focusRing}`}>Más filtros</summary>
+        <div className="grid grid-cols-2 gap-3 pb-3 md:grid-cols-4">
+          <Select name="tipo" label="Tipo" value={facets.category} options={options.categories} all="Todos" />
+          <Select
+            name="condicion"
+            label="Condición"
+            value={facets.condition ? (facets.condition === "new" ? "nueva" : "usada") : undefined}
+            options={[
+              { value: "nueva", label: "0 km" },
+              { value: "usada", label: "Usadas" },
+            ]}
+            all="Nuevas y usadas"
+          />
+          <Amount name="precio_max" label="Precio máximo (Gs.)" value={f.priceMax} placeholder="15.000.000" />
           <Amount name="precio_min" label="Precio mínimo (Gs.)" value={f.priceMin} placeholder="5.000.000" />
           <Amount name="anio_min" label="Año desde" value={f.yearMin} placeholder="2018" />
           <Amount name="km_max" label="Kilómetros hasta" value={f.kmMax} placeholder="30.000" />

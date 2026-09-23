@@ -15,10 +15,13 @@ export const PRIMARY_NAV: ReadonlyArray<{ href: string; label: string }> = [
 export function PrimaryNav() {
   return (
     <nav aria-label="Principal">
-      <ul className="flex flex-wrap items-center gap-x-4 gap-y-1">
+      <ul className="-mx-1 flex items-center gap-x-1 overflow-x-auto sm:gap-x-2">
         {PRIMARY_NAV.map((item) => (
           <li key={item.href}>
-            <Link href={item.href} className={`${tapTarget} px-1 text-neutral-900 hover:underline ${focusRing}`}>
+            <Link
+              href={item.href}
+              className={`${tapTarget} whitespace-nowrap rounded-md px-2 text-sm font-medium text-slate-700 hover:bg-slate-100 hover:text-slate-900 ${focusRing}`}
+            >
               {item.label}
             </Link>
           </li>
