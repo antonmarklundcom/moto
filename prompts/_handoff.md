@@ -23,7 +23,8 @@ Every phase prompt ends with "Follow `prompts/_handoff.md`". This is that. `BUIL
 Only when your prompt says so. Call `create_session` (claude-code-remote MCP; load it with ToolSearch):
 
 - `prompt`: exactly `Read prompts/<next-file>.md in this repo and execute it.`
-- `model`: from your prompt: Opus = `claude-opus-5-5`, Sonnet = `claude-sonnet-5`.
+- `model`: **always `claude-opus-5-5`** for every phase (`BUILD_PLAN.md` §5.1, owner 2026-09-23), whatever the
+  filename prefix says (`sonnet-*.md` names are historical). `claude-sonnet-5` is only for the watcher Routine.
   **Never Fable** (`BUILD_PLAN.md` §4.8). If you think Fable is needed, write it to `docs/decisions-needed.md`.
 - `title`: `moto <ID> — <name>` (the watcher finds sessions by this prefix).
 - `source_url`: `https://github.com/antonmarklundcom/moto`, `source_revision`: `main`.

@@ -1,4 +1,4 @@
-# Phase B2 — Model pages, en-cuotas, home. SONNET session. Lane 2 (parallel with the other B phases).
+# Phase B2 — Model pages, en-cuotas, home. OPUS session (filename prefix is historical, `BUILD_PLAN.md` §5.1). Lane 2 (parallel with the other B phases).
 
 Read ONLY: this file, `CLAUDE.md`, `BUILD_PLAN.md` §1, §2.2 (G-9, G-10), §4, §5.1, §5.2 (B2), §13, `docs/log/A0.md`,
 `docs/log/A2.md`, `DECISIONS.md` ADR-20, ADR-21, `PRODUCT_SPEC.md` §3.1, §3.5, `SEO_ARCHITECTURE.md` §2, §6, §12,

@@ -1,4 +1,4 @@
-# Phase B6 — Moderation & reports admin. SONNET session. Lane 2 (parallel with the other B phases).
+# Phase B6 — Moderation & reports admin. OPUS session (filename prefix is historical, `BUILD_PLAN.md` §5.1). Lane 2 (parallel with the other B phases).
 
 Read ONLY: this file, `CLAUDE.md`, `BUILD_PLAN.md` §1, §2.2 (G-12), §4, §5.1, §5.2 (B6), §13, `docs/log/A0.md`, `A1.md`,
 `A3.md`, `ADMIN_SPEC.md` §2–§3, §10, `TRUST_AND_SAFETY.md` §2–§5, `CONTENT_STRATEGY.md` §1.6.

@@ -1,4 +1,4 @@
-# Phase R0 — Research: catalog, competitors, vocabulary. SONNET session (web). Lane 0, runs in parallel with lane 1.
+# Phase R0 — Research: catalog, competitors, vocabulary. OPUS session (web) (filename prefix is historical, `BUILD_PLAN.md` §5.1). Lane 0, runs in parallel with lane 1.
 
 Read ONLY: this file, `CLAUDE.md`, `BUILD_PLAN.md` §1, §2.0 (F-10), §2.2 (G-16, G-17), §4, §5.2 (R0), §13,
 `DATABASE_SCHEMA.md` §2.4–§2.5, `CONTENT_STRATEGY.md` §1.2, `src/db/seed-data/*`. Nothing else.

@@ -1,4 +1,4 @@
-# Phase B1 — Browse pages. SONNET session. Lane 2 (parallel with the other B phases).
+# Phase B1 — Browse pages. OPUS session (filename prefix is historical, `BUILD_PLAN.md` §5.1). Lane 2 (parallel with the other B phases).
 
 Read ONLY: this file, `CLAUDE.md`, `BUILD_PLAN.md` §1, §4, §5.1, §5.2 (B1), §13, `docs/log/A0.md`, `docs/log/A2.md`,
 `SEO_ARCHITECTURE.md` §1–§3, §8–§9, §12, `PRODUCT_SPEC.md` §3.2, §4. Execute under the protocol `BUILD_PLAN.md` §4.
@@ -20,7 +20,7 @@ Do:
    canonical, `?page=N` self-canonical, sort, honest empty state (ADR-21). Filter form works without JS.
 2. The programmatic types (T-106, all but the model page): brand, brand × city, category (`tipo`), city, category
    × city, `nuevas`, `usadas`. They share ONE template in `src/components/browse/`. Build the brand page as the
-   exemplar, verify it, then fan out the rest as parallel **Sonnet** subagents per `fable-directs-sonnet-builds`
+   exemplar, verify it, then fan out the rest as parallel **Opus** subagents per `fable-directs-sonnet-builds`
    §Fan-out (never Fable). One verify, one PR.
 3. Each page: live count from the DB, `intro_html` when present, A2's `isIndexable()` → robots meta, breadcrumbs,
    one `h1`. Forbidden combinations (`SEO_ARCHITECTURE.md` §2.3) and unknown or inactive slugs → 404.

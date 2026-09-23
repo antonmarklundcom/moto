@@ -1,4 +1,4 @@
-# Phase C1 — Link pass, sitemaps, robots, nav, known issues. SONNET session. Sequential, after all of lane 2.
+# Phase C1 — Link pass, sitemaps, robots, nav, known issues. OPUS session (filename prefix is historical, `BUILD_PLAN.md` §5.1). Sequential, after all of lane 2.
 
 Read ONLY: this file, `CLAUDE.md`, `BUILD_PLAN.md` §1, §4, §5.1, §5.2 (C1), §13, `docs/log/A2.md`, and from every
 `docs/log/B*.md` only its "Link-pass wishes" and "Known issues" sections. Specs: `SEO_ARCHITECTURE.md` §3.4, §7–§8,

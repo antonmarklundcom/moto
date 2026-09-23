@@ -1,0 +1,31 @@
+comercio,referencia,marca,modelo,condicion,anio,kilometraje,ciudad,categoria,precio_contado_gs,entrega_gs,cuota_gs,cantidad_cuotas,solo_financiado,negociable,acepta_permuta,estado_documentacion,telefono,whatsapp,titulo,descripcion
+dev-comercio-uno,DEV-U01,Honda,Wave 110S,0km,,,Asunción,Cub,9500000,1000000,480000,24,no,no,no,,0981 000 000,si,[DEV] Honda Wave 110S 0 km,"Publicación de prueba (local). Moto de trabajo y ciudad, 110 cc. Consultá colores disponibles."
+dev-comercio-uno,DEV-U02,Honda,CG 110,0km,,,Asunción,Naked,8900000,900000,450000,24,no,no,no,,0981 000 000,si,[DEV] Honda CG 110 0 km,Publicación de prueba (local). Moto de calle económica para el día a día.
+dev-comercio-uno,DEV-U03,Honda,XR 150L,0km,,,Asunción,Enduro / Cross,17500000,2000000,890000,24,no,no,no,,0981 000 000,si,[DEV] Honda XR 150L 0 km,Publicación de prueba (local). Para calle y camino de tierra.
+dev-comercio-uno,DEV-U04,Honda,XR 190,0km,,,Asunción,Enduro / Cross,21900000,2500000,1100000,24,no,no,no,,0981 000 000,si,[DEV] Honda XR 190 0 km,Publicación de prueba (local).
+dev-comercio-uno,DEV-U05,Honda,Navi 110,0km,,,Asunción,Scooter,10900000,1200000,560000,24,no,no,no,,0981 000 000,si,[DEV] Honda Navi 110 0 km,Publicación de prueba (local). Automática.
+dev-comercio-uno,DEV-U06,Yamaha,XTZ 150,usada,2021,18500,Asunción,Enduro / Cross,15500000,,,,no,si,si,al_dia,0981 000 000,si,[DEV] Yamaha XTZ 150 2021,"Publicación de prueba (local). Un solo dueño, service al día, papeles al día."
+dev-comercio-uno,DEV-U07,Honda,CB 500X,usada,2021,23000,Asunción,Touring,52000000,,,,no,si,no,al_dia,0981 000 000,si,[DEV] Honda CB 500X 2021,Publicación de prueba (local). Kit de transmisión nuevo.
+dev-comercio-uno,DEV-U08,Kenton,GL 150,0km,,,Asunción,Naked,7200000,700000,380000,24,no,no,no,,0981 000 000,si,[DEV] Kenton GL 150 0 km,Publicación de prueba (local). Ideal para reparto.
+dev-comercio-uno,DEV-U09,Bajaj,Boxer 150,usada,2023,9800,Asunción,Naked,7500000,,,,no,si,si,transferencia_pendiente,0981 000 000,si,[DEV] Bajaj Boxer 150 2023,Publicación de prueba (local). La transferencia está pendiente: preguntá antes de reservar.
+dev-comercio-uno,DEV-U10,Honda,Rebel 500,0km,,,Asunción,Custom / Chopper,58000000,,,,no,no,no,,0981 000 000,si,[DEV] Honda Rebel 500 0 km,Publicación de prueba (local). Sólo contado.
+dev-comercio-dos,DEV-D01,Honda,Wave 110S,0km,,,San Lorenzo,Cub,9300000,1500000,450000,24,no,no,no,,0981 000 000,si,[DEV] Honda Wave 110S 0 km,Publicación de prueba (local).
+dev-comercio-dos,DEV-D02,Kenton,GL 150,0km,,,San Lorenzo,Naked,7000000,500000,360000,24,no,no,no,,0981 000 000,si,[DEV] Kenton GL 150 0 km,Publicación de prueba (local).
+dev-comercio-dos,DEV-D03,Kenton,Blitz 110,0km,,,San Lorenzo,Cub,5900000,600000,310000,24,no,no,no,,0981 000 000,si,[DEV] Kenton Blitz 110 0 km,Publicación de prueba (local). Semiautomática.
+dev-comercio-dos,DEV-D04,Kenton,GTR 150,0km,,,San Lorenzo,Naked,7900000,800000,410000,24,no,no,no,,0981 000 000,si,[DEV] Kenton GTR 150 0 km,Publicación de prueba (local).
+dev-comercio-dos,DEV-D05,Star,Star 150,0km,,,San Lorenzo,Naked,6400000,600000,340000,24,no,no,no,,0981 000 000,si,[DEV] Star 150 0 km,Publicación de prueba (local).
+dev-comercio-dos,DEV-D06,Star,SMX 150,0km,,,San Lorenzo,Enduro / Cross,8500000,900000,440000,24,no,no,no,,0981 000 000,si,[DEV] Star SMX 150 0 km,Publicación de prueba (local).
+dev-comercio-dos,DEV-D07,Honda,CG 110,0km,,,San Lorenzo,Naked,8800000,1000000,420000,24,no,no,no,,0981 000 000,si,[DEV] Honda CG 110 0 km,Publicación de prueba (local).
+dev-comercio-dos,DEV-D08,Yamaha,YBR 125Z,usada,2020,31000,San Lorenzo,Naked,8200000,,,,no,si,no,al_dia,0981 000 000,si,[DEV] Yamaha YBR 125Z 2020,Publicación de prueba (local). Cubiertas nuevas.
+dev-comercio-dos,DEV-D09,Kenton,GL 150 Pro,usada,2024,6500,San Lorenzo,Naked,6300000,,,,no,no,no,no_declara,0981 000 000,si,[DEV] Kenton GL 150 Pro 2024,Publicación de prueba (local).
+dev-comercio-dos,DEV-D10,Honda,Wave 110S,usada,2022,15000,San Lorenzo,Cub,6200000,,,,no,si,no,al_dia,021 000 000,no,[DEV] Honda Wave 110S 2022,"Publicación de prueba (local). Sólo llamadas, sin WhatsApp."
+dev-comercio-tres,DEV-T01,Honda,Wave 110S,0km,,,Ciudad del Este,Cub,,1200000,470000,24,si,no,no,,0981 000 000,si,[DEV] Honda Wave 110S 0 km en cuotas,Publicación de prueba (local). El comercio sólo informa la financiación.
+dev-comercio-tres,DEV-T02,Yamaha,XTZ 150,0km,,,Ciudad del Este,Enduro / Cross,20500000,2500000,990000,24,no,no,no,,0981 000 000,si,[DEV] Yamaha XTZ 150 0 km,Publicación de prueba (local).
+dev-comercio-tres,DEV-T03,Bajaj,Boxer 150,0km,,,Ciudad del Este,Naked,9900000,1000000,510000,24,no,no,no,,0981 000 000,si,[DEV] Bajaj Boxer 150 0 km,Publicación de prueba (local).
+dev-comercio-tres,DEV-T04,Bajaj,Dominar 400,0km,,,Ciudad del Este,Touring,42000000,6000000,1950000,24,no,no,no,,0981 000 000,si,[DEV] Bajaj Dominar 400 0 km,Publicación de prueba (local).
+dev-comercio-tres,DEV-T05,TVS,Raider 125,0km,,,Ciudad del Este,Naked,11500000,1200000,590000,24,no,no,no,,0981 000 000,si,[DEV] TVS Raider 125 0 km,Publicación de prueba (local).
+dev-comercio-tres,DEV-T06,Honda,XR 150L,0km,,,Ciudad del Este,Enduro / Cross,17200000,1800000,880000,24,no,no,no,,0981 000 000,si,[DEV] Honda XR 150L 0 km,Publicación de prueba (local).
+dev-comercio-tres,DEV-T07,Suzuki,Gixxer 150,0km,,,Ciudad del Este,Naked,16900000,2000000,850000,24,no,no,no,,0981 000 000,si,[DEV] Suzuki Gixxer 150 0 km,Publicación de prueba (local).
+dev-comercio-tres,DEV-T08,Honda,XR 250 Tornado,usada,2015,41000,Ciudad del Este,Enduro / Cross,16000000,,,,no,si,si,al_dia,0981 000 000,si,[DEV] Honda XR 250 Tornado 2015,Publicación de prueba (local). Papeles al día.
+dev-comercio-tres,DEV-T09,Kenton,Blitz 110,0km,,,Ciudad del Este,Cub,5800000,500000,300000,24,no,no,no,,0981 000 000,si,[DEV] Kenton Blitz 110 0 km,Publicación de prueba (local).
+dev-comercio-tres,DEV-T10,Honda,NX500,0km,,,Ciudad del Este,Touring,69000000,,,,no,no,no,,0981 000 000,si,[DEV] Honda NX500 0 km,Publicación de prueba (local). Sólo contado.

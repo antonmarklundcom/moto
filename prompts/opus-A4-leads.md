@@ -35,6 +35,7 @@ step H-4: write it as "needs owner" in the log. Log "Codex review due (owner, §
 ## After this phase
 Follow `prompts/_handoff.md`, then:
 1. Create the watcher Routine exactly as `prompts/_watcher.md` §Setup says. Put its `trigger_id` in the log.
-2. Spawn lane 2, first four in this order: `prompts/opus-B8-import.md` (Opus), `prompts/sonnet-B1-browse.md`,
-   `prompts/sonnet-B3-detail.md`, `prompts/sonnet-B6-moderation.md` (Sonnet `claude-sonnet-5`). The watcher
+2. Spawn lane 2, first four in this order: `prompts/opus-B8-import.md`, `prompts/sonnet-B1-browse.md`,
+   `prompts/sonnet-B3-detail.md`, `prompts/sonnet-B6-moderation.md`, **all four on Opus `claude-opus-5-5`**
+   (`BUILD_PLAN.md` §5.1, owner 2026-09-23; the `sonnet-` prefix is historical). The watcher
    starts B2, B4, B5, B7, B9, B10 as slots free. Then end with the phase report.

@@ -1,4 +1,4 @@
-# Phase B3 — Listing detail. SONNET session. Lane 2 (parallel with the other B phases).
+# Phase B3 — Listing detail. OPUS session (filename prefix is historical, `BUILD_PLAN.md` §5.1). Lane 2 (parallel with the other B phases).
 
 Read ONLY: this file, `CLAUDE.md`, `BUILD_PLAN.md` §1, §4, §5.1, §5.2 (B3), §13, `docs/log/A0.md`, `A2.md`, `A3.md`,
 `A4.md`, `PRODUCT_SPEC.md` §2.1, §2.4, §3.3, `SEO_ARCHITECTURE.md` §4–§6, §12, `TRUST_AND_SAFETY.md` §5, §7,

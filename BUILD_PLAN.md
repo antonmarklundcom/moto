@@ -51,6 +51,11 @@ The eight assumptions S-1…S-8 were taken without you. Confirm or correct:
 
 All defaults accepted: S-1…S-8 as assumed; ADR-17 (schema delta) and ADR-18…ADR-24 approved; staging slot yes (deploy later, owner-run); organic social yes; Cloudflare measured in C2. The owner deploys to the Hostinger Node.js slot himself later (H-1), so **no phase blocks on deployment**. Phases verify against local MySQL.
 
+### 1.4 Owner answers (2026-09-23)
+
+- **Models:** all remaining phases on Opus 5.5, Sonnet only where it is "super wasteful" to use Opus and trivially easy for Sonnet: in practice only the hourly watcher. Applied in §5.1, `prompts/_handoff.md`, `prompts/_watcher.md`, `prompts/opus-A4-leads.md` and every `prompts/sonnet-*.md` header.
+- **No dealer stock yet → demo stock:** `docs/templates/demo/stock-demo.csv` (30 `[DEV]` motos, 3 `dev-` dealers). ADR-24 still holds: it is imported **only** into a local database behind the `dev-fixtures` guard, never production or staging. B8 owns it and makes it importable (`prompts/opus-B8-import.md` item 7).
+
 ---
 
 ## 2.0 Re-audit of PRs #1–#8 (done 2026-09-22; don't take earlier work as truth)
@@ -164,7 +169,7 @@ Competitor facts come from R0 with sources. No "N°1", no "más grande" (`PLAN.m
 5. Missing env values never block: document them in `.env.example` and degrade gracefully (e.g. CRM URL unset → lead saved, `crm_status = pending`, logged).
 6. Prompts are re-runnable. Check what exists on the branch and continue from the first unmet criterion. WIP commit at least every 30 min.
 7. Lane 2 hard limits: no schema, no auth, no state machine, no URL/indexation rule, no CRM payload changes. Use a workaround and add a Backlog note instead.
-8. **Model cost guardrail:** Fable is never used for phases, subagents, spawned sessions, watchers, or Routines. Phase models are only Opus or Sonnet as fixed in §5. Fable appears only in review sessions the owner opens himself (§8).
+8. **Model cost guardrail:** Fable is never used for phases, subagents, spawned sessions, watchers, or Routines. Phase models are fixed in §5.1: Opus for every phase and subagent, Sonnet only for the watcher. Fable appears only in review sessions the owner opens himself (§8).
 9. **File ownership:** a phase writes only its **Owns** paths, plus its own `docs/log/<id>.md`. On merge conflicts `main` wins; re-apply on top. Never edit outside Owns to resolve a conflict; log it and end.
 10. Handoff: done = PR merged green + exit checklist + one re-run of `verify` on `main` + one adversarial re-read of the merged diff (fixes in ONE follow-up commit) + phase log. Lane 1 spawns the next lane 1 phase. A4 creates the watcher and spawns lane 2. The watcher spawns C1 when lane 2 is merged. C1 spawns C2. C2 deletes the watcher and writes the closing report.
 11. Phase log ≤ 30 lines: Built / Decisions / Known issues / "Verification: verify green on <sha>".
@@ -179,27 +184,29 @@ Competitor facts come from R0 with sources. No "N°1", no "más grande" (`PLAN.m
 
 ### 5.1 Phase table
 
-Lane 0 runs any time. Lane 1 is sequential on Opus. Lane 2 runs in parallel on Sonnet (the watcher keeps ≤ 4 running, starting in the listed order). C runs sequentially after lane 2.
+Lane 0 runs any time. Lane 1 is sequential. Lane 2 runs in parallel (the watcher keeps ≤ 4 running, starting in the listed order). C runs sequentially after lane 2.
+
+**Model policy (owner, 2026-09-23, §1.4):** every phase runs on **Opus 5.5** (`claude-opus-5-5`), and so do in-phase subagents and fan-outs. The only Sonnet (`claude-sonnet-5`) left is the hourly watcher Routine, a few-minute status check where Opus would be pure waste. Prompt files keep their historical `sonnet-` / `opus-` filename prefix so running sessions and the watcher don't lose track of them: **the model always comes from this table, never from the filename.**
 
 | Phase | Lane | Model | Covers | Depends on | Codex review |
 |---|---|---|---|---|---|
-| **R0** Research | 0 | Sonnet (web) | G-16, G-17, vocabulary check list | — | — |
+| **R0** Research | 0 | Sonnet (web), reviewed by Opus — done | G-16, G-17, vocabulary check list | — | — |
 | **A0** Dev env + schema delta | 1 | Opus | ADR-17, G-20, G-21, G-25, G-26, G-27 | owner Q6 | — |
 | **A1** Security core | 1 | Opus | T-113, T-111, G-1 token lib, G-7, G-8/G-19, admin shell | A0 | **yes** |
 | **A2** Public skeleton + SEO core | 1 | Opus | T-101, T-102, route contract, G-15, events lib, public shell | A0 | — |
 | **A3** Media pipeline | 1 | Opus | T-108, G-2, G-22 | A1 | **yes** |
 | **A4** Leads, CRM, tracking | 1 | Opus | T-109, T-110, T-105, phone reveal | A1, A2 | **yes** |
 | **B8** Stock import & ops | 2 | Opus | G-18, G-6 workflow, G-14 | A1, A2, A3 | **yes** |
-| **B1** Browse pages | 2 | Sonnet | T-103, T-106 (all but model page) | A2 | — |
-| **B3** Listing detail | 2 | Sonnet | T-104, public side of T-118, share | A2, A3, A4 | — |
-| **B6** Moderation & reports admin | 2 | Sonnet | T-114, admin side of T-118 | A1, A3 | — |
-| **B2** Model pages, en-cuotas, home | 2 | Sonnet | G-9, G-10, T-120, model page of T-106 | A2 | — |
+| **B1** Browse pages | 2 | Opus | T-103, T-106 (all but model page) | A2 | — |
+| **B3** Listing detail | 2 | Opus | T-104, public side of T-118, share | A2, A3, A4 | — |
+| **B6** Moderation & reports admin | 2 | Opus | T-114, admin side of T-118 | A1, A3 | — |
+| **B2** Model pages, en-cuotas, home | 2 | Opus | G-9, G-10, T-120, model page of T-106 | A2 | — |
 | **B4** Publish flow + seller link | 2 | Opus | T-107, G-1 UI, G-12 | A1, A3 | **yes** |
-| **B5** Financing, insurance, dealers | 2 | Sonnet | `/financiacion`, `/seguros`, `/gracias`, `/comercios/**`, `/contacto` | A2, A4 | — |
-| **B7** Admin CRUD & catalog | 2 | Sonnet | T-115, `model_suggestions`, G-15 in admin | A1 | — |
-| **B9** Leads inbox, monetization, health | 2 | Sonnet | T-116, `ADMIN_SPEC.md` §8, G-24, G-13 view | A1, A4 | — |
-| **B10** Content & static pages | 2 | Sonnet | T-117 content, T-119 (10 guide drafts via fan-out), legal placeholders | A1, A2 | — |
-| **C1** Link pass + sitemaps | — | Sonnet | T-112, `SEO_ARCHITECTURE.md` §8, nav, KNOWN-ISSUES | all B | — |
+| **B5** Financing, insurance, dealers | 2 | Opus | `/financiacion`, `/seguros`, `/gracias`, `/comercios/**`, `/contacto` | A2, A4 | — |
+| **B7** Admin CRUD & catalog | 2 | Opus | T-115, `model_suggestions`, G-15 in admin | A1 | — |
+| **B9** Leads inbox, monetization, health | 2 | Opus | T-116, `ADMIN_SPEC.md` §8, G-24, G-13 view | A1, A4 | — |
+| **B10** Content & static pages | 2 | Opus | T-117 content, T-119 (10 guide drafts via fan-out), legal placeholders | A1, A2 | — |
+| **C1** Link pass + sitemaps | — | Opus | T-112, `SEO_ARCHITECTURE.md` §8, nav, KNOWN-ISSUES | all B | — |
 | **C2** Hardening + E2E + closing | — | Opus | T-121, `TEST_PLAN.md` §4/§7/§8/§9, G-26 check, closing report | C1 | **yes (full surface)** |
 | **E1** Design pass | — | owner-driven (Claude Design) | ADR-15 pass | C2 | — |
 | **F1** Launch gates | — | owner | T-122, §9 gates | E1 + business | — |
@@ -251,7 +258,7 @@ Lane 2 start order is chosen for the **business** critical path: B8 (get dealer 
 
 **B1 — Browse pages.** Owns `src/app/(public)/motos/page.tsx`, `motos/[brand]/page.tsx`, `motos/[brand]/ciudad/**`, `motos/tipo/**`, `motos/ciudad/**`, `motos/nuevas/**`, `motos/usadas/**`, `src/components/browse/**`.
 - T-103 + T-106 for these routes, using A2's route contract only. Forbidden combinations → 404.
-- The programmatic types share one template. Build one exemplar, then fan the rest out as subagents (`fable-directs-sonnet-builds` §Fan-out, on Sonnet).
+- The programmatic types share one template. Build one exemplar, then fan the rest out as subagents (`fable-directs-sonnet-builds` §Fan-out, on Opus per §5.1).
 
 **B2 — Model pages, en-cuotas, home.** Owns `src/app/(public)/motos/[brand]/[model]/**`, `src/app/(public)/motos/en-cuotas/**`, `src/app/(public)/page.tsx`, `src/components/financing-compare/**`.
 - G-9 comparison block (real rows only, "informado por el comercio", no computed cuota), price range only with N ≥ 5, G-10 cuota-first home, T-120.
@@ -285,7 +292,7 @@ Lane 2 start order is chosen for the **business** critical path: B8 (get dealer 
 - 10 guide **drafts** (fan-out), every procedure/fee fact marked `[VERIFICAR: fuente]`.
 - Legal pages = placeholder + "en revisión", **no legal text written** (`LEGAL_AND_COMPLIANCE.md` §10).
 
-**C1 — Link pass + sitemaps (Sonnet).** Owns `src/app/sitemap.xml/**`, `src/app/sitemaps/**`, `src/app/robots.txt/**`, `src/components/public/nav*`, `KNOWN-ISSUES.md`, plus cross-link edits listed in `docs/decisions-needed.md`.
+**C1 — Link pass + sitemaps (Opus).** Owns `src/app/sitemap.xml/**`, `src/app/sitemaps/**`, `src/app/robots.txt/**`, `src/components/public/nav*`, `KNOWN-ISSUES.md`, plus cross-link edits listed in `docs/decisions-needed.md`.
 - T-112, `SEO_ARCHITECTURE.md` §8 linking rules (never mass-link noindex pages), nav entries, promote known issues. Spawns C2.
 
 **C2 — Hardening + E2E + closing (Opus).** Owns `tests/**`, perf/a11y fixes anywhere (logged file by file), `docs/log/C2.md`, `docs/closing-report.md`.
@@ -360,7 +367,7 @@ Model spec sheets from importer data (needs columns + sourcing) · price history
 
 ## 12. Cost and time, rough
 
-A rough estimate from the conthtml benchmark (~$20 per Opus/Sonnet phase that ships code); treat it as an order of magnitude, not a quote. 5 lane-1 Opus phases + 10 lane-2 phases (2 Opus) + C1 + C2 + R0 ≈ **$250–400** in model usage. Codex reviews add a small amount. Fable reviews are the owner's own sessions. Wall-clock ≈ 1 day for lane 1 + ~1 day for lane 2 in parallel + ½ day for C. The business track sets the real launch date.
+A rough estimate from the conthtml benchmark (~$20 per Opus/Sonnet phase that ships code); treat it as an order of magnitude, not a quote. 5 lane-1 Opus phases + 10 lane-2 phases (2 Opus) + C1 + C2 + R0 ≈ **$250–400** in model usage. Measured so far on Opus 5.5: A0 ≈ $11, A1 ≈ $5, A2 ≈ $35 (incl. its audit), A3 ≈ $8. With every phase on Opus (§1.4) expect the upper end of that range, not a multiple of it. Codex reviews add a small amount. Fable reviews are the owner's own sessions. Wall-clock ≈ 1 day for lane 1 + ~1 day for lane 2 in parallel + ½ day for C. The business track sets the real launch date.
 
 ## 13. Build log index
 
