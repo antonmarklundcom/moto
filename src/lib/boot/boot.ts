@@ -43,15 +43,27 @@ export async function bootstrapAdmin(env: Env = process.env): Promise<string> {
   const email = env.ADMIN_EMAIL?.trim();
   const password = env.ADMIN_PASSWORD ?? "";
   if (!email || !password) return "sin ADMIN_EMAIL/ADMIN_PASSWORD";
+  // Olvidé la clave (sin SSH): ADMIN_PASSWORD_RESET=true + clave nueva y redeploy.
+  const reset = (env.ADMIN_PASSWORD_RESET ?? "").trim().toLowerCase() === "true";
   const { db } = await import("@/db");
   const { users } = await import("@/db/schema");
   const [row] = await db.select({ n: count() }).from(users).where(and(eq(users.role, "admin"), eq(users.isActive, true)));
-  if (Number(row?.n ?? 0) > 0) return "ya hay un admin";
+  if (Number(row?.n ?? 0) > 0 && !reset) return "ya hay un admin";
   const { passwordProblem } = await import("@/lib/auth/password");
   const problem = passwordProblem(password);
   if (problem) throw new Error(`ADMIN_PASSWORD: ${problem}`);
   const { createPanelUser } = await import("@/lib/auth/users");
   const r = await createPanelUser({ email, name: env.ADMIN_NAME?.trim() || "Admin", password, role: "admin", resetIfExists: true });
+  if (reset) {
+    // Resetear también desbloquea la cuenta (como `npm run create-admin -- --reset`).
+    const salt = env.IP_HASH_SALT?.trim();
+    if (salt) {
+      const { clearAccountFailures } = await import("@/lib/auth/lockout");
+      await clearAccountFailures(email, salt);
+    }
+    log("warn", "ADMIN_PASSWORD_RESET aplicado: sacá la variable del panel para que no se repita en cada arranque");
+    return r.created ? `admin creado (id ${r.id})` : `clave del admin reseteada (id ${r.id})`;
+  }
   return `admin creado (id ${r.id})`;
 }
 

@@ -49,4 +49,13 @@ describe("arranque automático", () => {
     }
     await expect(bootstrapAdmin({ ADMIN_EMAIL: EMAIL, ADMIN_PASSWORD: "corta" })).resolves.toBeDefined();
   });
+
+  it("ADMIN_PASSWORD_RESET=true resetea la clave del admin indicado (sin SSH)", async () => {
+    const env = { ADMIN_EMAIL: EMAIL, ADMIN_PASSWORD: "otra-clave-de-reseteo-9", ADMIN_PASSWORD_RESET: "true" };
+    expect(await bootstrapAdmin(env)).toMatch(/admin creado|clave del admin reseteada/);
+    const [u] = await db.select().from(users).where(eq(users.email, EMAIL));
+    expect(u).toMatchObject({ role: "admin", isActive: true });
+    const { verifyPassword } = await import("@/lib/auth/password");
+    expect(await verifyPassword("otra-clave-de-reseteo-9", u.passwordHash)).toBe(true);
+  });
 });

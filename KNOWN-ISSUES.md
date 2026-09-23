@@ -14,13 +14,11 @@ Promoted from the phase logs by C1 (2026-09-23). One line each, owner-facing. Fi
 ## Product and code (backlog)
 - Photos of deleted or rejected listings are still reachable by URL for 30 days; then the daily `purge-removed-photos` job deletes the files. The rows stay, since moderation uses their hash to spot repeated photos. Blocking them in `/media` right away would need an index on `listing_images.storage_path` (schema change). Admin pages show those old photos as broken images.
 - The client can pick its own draft token (≥ 32 chars). Impact is tiny; switch to server-issued tokens when touching uploads again.
-- Anyone can lock the owner's account for 15 min with 5 bad passwords. Recover with `npm run create-admin -- --reset`.
+- Anyone can lock the owner's account for 15 min with 5 bad passwords. The lock lifts by itself, or you can reset the password with `ADMIN_PASSWORD_RESET=true` (DEPLOY.md).
 - `/api/telefono` and `/api/leads` compare `Origin` with `SITE_URL`, so they fail if the site runs on another host or port (staging with a wrong `SITE_URL`). Keep `SITE_URL` exact per slot.
-- The model selector on `/motos` without JS doesn't update when the brand changes.
+- Without JS, the model selector on `/motos` works in two steps: pick the brand and filter, then the models appear.
 - The admin can delete, reorder and pick the cover photo, but not upload new photos. Photos come from /publicar, /mi-aviso or /admin/importar.
 - There is no expiry reminder to private sellers. `/como-funciona` doesn't promise one.
 - Duplicate-photo detection always fires with local fixtures, because they share placeholder images. This does not affect real data.
 - `topFinancedModels` and the moderation-queue signals are computed on every request. Cache them when volume grows.
 - Blocking a phone number in moderation needs a table and the lawyer's answer (T&S §9).
-- Guides are not yet linked from the listing pages' "Antes de pagar" block. Add the link once the guide is published, so it doesn't point to a 404.
-- On mobile, the `/motos` filter form fills the first screen. The design pass (E1) should make the filters collapsible.
