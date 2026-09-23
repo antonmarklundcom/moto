@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { CrmAttributionScript } from "@/lib/crm/attribution-script";
 import { env, globalIndexingAllows } from "@/lib/env";
 import "./globals.css";
 
@@ -29,7 +30,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="es-PY">
-      <body className="antialiased">{children}</body>
+      <body className="antialiased">
+        {children}
+        <CrmAttributionScript />
+      </body>
     </html>
   );
 }
