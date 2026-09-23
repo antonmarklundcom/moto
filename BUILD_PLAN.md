@@ -387,5 +387,6 @@ A rough estimate from the conthtml benchmark (~$20 per Opus/Sonnet phase that sh
 | B5 | [#27](https://github.com/antonmarklundcom/moto/pull/27) | `docs/log/B5.md` |
 | B7 | [#28](https://github.com/antonmarklundcom/moto/pull/28) | `docs/log/B7.md` |
 | B9 | [#29](https://github.com/antonmarklundcom/moto/pull/29) | `docs/log/B9.md` |
+| B4 | [#30](https://github.com/antonmarklundcom/moto/pull/30) | `docs/log/B4.md` |
 
 PR for this audit + A0 prompt: see git history of `prompts/opus-A0-foundation.md`.
