@@ -9,6 +9,7 @@ import { brands, listings, models } from "@/db/schema";
 import { formatGuaranies } from "@/lib/format";
 import { type ListingFilters, parseSearchParams, type ParsedSearchParams } from "@/lib/listings/filters";
 import { countLiveListings, type ListingSearchResult, listingWhere, liveCondition, resolveFacetSlugs, searchListings } from "@/lib/listings/query";
+import { editorialKeys, editorialText } from "@/lib/seo/editorial";
 import { countWords, isIndexable } from "@/lib/seo/indexability";
 import { type ListingPageSeo, resolveListingPageSeo } from "@/lib/seo/meta";
 import { paths } from "@/lib/seo/routes";
@@ -87,6 +88,7 @@ export type EnCuotasData =
       search: ListingSearchResult;
       seo: Seo;
       liveCount: number;
+      introHtml: string | null;
       comparisons: Array<{ brand: { name: string; slug: string }; model: { name: string; slug: string }; offers: OfferListing[] }>;
     };
 
@@ -110,8 +112,9 @@ async function loadEnCuotas(query: string): Promise<EnCuotasData> {
     searchListings({ filters: { ...base, ...parsed.filters }, sort: parsed.sort, page: parsed.page }),
     topFinancedModels(12),
   ]);
-  // Sin texto editorial propio todavía (docs/decisions-needed.md, A2): 0 palabras → noindex por regla.
-  const indexable = isIndexable("en_cuotas", liveCount, 0);
+  // Texto editorial en content/seo/en-cuotas.md (decisión A2): sin revisar → 0 palabras → noindex por regla.
+  const intro = editorialText(editorialKeys.enCuotas);
+  const indexable = isIndexable("en_cuotas", liveCount, intro?.words ?? 0);
   const seo = resolveListingPageSeo({ basePath: paths.enCuotas, parsed, baseIndexable: indexable, pageCount: search.pageCount });
   if (seo.status === "not_found") return { status: "not_found" };
 
@@ -133,7 +136,7 @@ async function loadEnCuotas(query: string): Promise<EnCuotasData> {
     if (offers.length >= 2) comparisons.push({ brand: { name: m.brandName, slug: m.brandSlug }, model: { name: m.name, slug: m.slug }, offers });
     if (comparisons.length >= 4) break;
   }
-  return { status: "ok", parsed, search, seo, liveCount, comparisons };
+  return { status: "ok", parsed, search, seo, liveCount, introHtml: intro?.html ?? null, comparisons };
 }
 
 export const loadEnCuotasPage = cache(loadEnCuotas);

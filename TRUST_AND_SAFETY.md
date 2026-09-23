@@ -98,6 +98,11 @@ Enlace en cada ficha, sin registro, teléfono opcional.
 
 **Reglas:**
 - 3 denuncias independientes de tipo `estafa` o `robada` sobre la misma publicación → pausa automática a `paused` + prioridad máxima en la cola. La pausa es automática; la baja definitiva es humana.
+- La publicación pausada por denuncias sólo la reanuda admin o moderador; el vendedor o el comercio no (decisión del propietario, 2026-09-23).
+- **Denuncias de mala fe (decisión del propietario, 2026-09-23):** nadie pausa publicaciones ajenas "porque sí".
+  - Sólo cuentan para la pausa las denuncias con IP identificable (hash); cada IP cuenta una vez.
+  - Una IP con 2 denuncias **descartadas** por un moderador en los últimos 90 días queda silenciada: sus denuncias nuevas se guardan ya descartadas, no cuentan para la pausa y no se le avisa (no aprende a esquivarlo). Descartar = "denuncia infundada".
+  - Si un moderador reanuda una publicación pausada por denuncias, las denuncias anteriores a esa reanudación ya no cuentan; y durante 30 días la publicación no se vuelve a pausar sola: las denuncias nuevas sólo la suben al tope de la cola.
 - Denuncias `vendida` → no pausan; marcan para verificación de disponibilidad.
 - Se limita a 5 denuncias por `reporter_ip_hash` por día para evitar sabotaje entre competidores.
 - Toda resolución escribe `activity_log` con nota.

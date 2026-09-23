@@ -5,9 +5,9 @@
 // una prueba negativa por cada transición prohibida × rol); `transition()` la
 // aplica de verdad: bloquea la fila, revalida, chequea las reglas duras y
 // escribe `activity_log` en la misma transacción.
-import { count, eq } from "drizzle-orm";
+import { and, count, desc, eq } from "drizzle-orm";
 import { db } from "@/db";
-import { dealers, listingImages, listings, type listingStatusEnum } from "@/db/schema";
+import { activityLog, dealers, listingImages, listings, type listingStatusEnum } from "@/db/schema";
 import { diffFields, logActivity } from "@/lib/activity";
 import { normalizePhone } from "@/lib/phone";
 import { ForbiddenError, inScope, type Role, type SessionUser } from "@/lib/auth/roles";
@@ -50,6 +50,9 @@ export type TransitionDef = {
 
 export const DEFAULT_LISTING_TTL_DAYS = 60;
 
+/** Job de la pausa automática por denuncias. Una publicación pausada así sólo la reanuda admin o moderador. */
+export const REPORTS_AUTO_PAUSE_JOB = "reports_auto_pause";
+
 const OWNERS_AND_STAFF = { admin: "yes", moderator: "yes", dealer: "own", seller: "own", system: "no" } as const;
 
 export const TRANSITIONS: Readonly<Record<TransitionAction, TransitionDef>> = {
@@ -71,7 +74,8 @@ export const TRANSITIONS: Readonly<Record<TransitionAction, TransitionDef>> = {
     who: { admin: "yes", moderator: "yes", dealer: "no", seller: "no", system: "no" },
     logAction: "rejected",
   },
-  pause: { from: ["published"], to: "paused", who: OWNERS_AND_STAFF, logAction: "paused" },
+  // Sistema: sólo la pausa automática por denuncias (T&S §5, decisión del propietario 2026-09-23).
+  pause: { from: ["published"], to: "paused", who: { ...OWNERS_AND_STAFF, system: "yes" }, logAction: "paused" },
   resume: { from: ["paused"], to: "published", who: OWNERS_AND_STAFF, logAction: "resumed" },
   mark_sold: { from: ["published"], to: "sold", who: OWNERS_AND_STAFF, logAction: "sold" },
   expire: {
@@ -229,6 +233,10 @@ export function addDays(date: Date, days: number): Date {
   return new Date(date.getTime() + days * 24 * 60 * 60 * 1000);
 }
 
+function isStaffActor(actor: Actor): boolean {
+  return actor.kind === "user" && (actor.user.role === "admin" || actor.user.role === "moderator");
+}
+
 export class TransitionError extends Error {
   constructor(
     readonly code: "not_found" | "invalid_state" | "deleted" | "requirements" | "missing_reason",
@@ -307,6 +315,20 @@ export async function transition(input: TransitionInput): Promise<TransitionResu
       throw new TransitionError(decision.code, decision.message);
     }
     const to = decision.def.to;
+
+    // Pausa automática por denuncias: el dueño no puede reanudarla por su cuenta
+    // (si no, un estafador la vuelve a publicar al minuto). Decide una persona.
+    if (action === "resume" && !isStaffActor(actor)) {
+      const [lastPause] = await tx
+        .select({ diff: activityLog.diffJson })
+        .from(activityLog)
+        .where(and(eq(activityLog.entityType, "listing"), eq(activityLog.entityId, row.id), eq(activityLog.action, "paused")))
+        .orderBy(desc(activityLog.createdAt), desc(activityLog.id))
+        .limit(1);
+      if ((lastPause?.diff as { job?: string } | null)?.job === REPORTS_AUTO_PAUSE_JOB) {
+        throw new TransitionForbiddenError(`La publicación ${row.id} está pausada por denuncias: la reanuda un moderador`);
+      }
+    }
 
     if (to === "published") {
       const [images] = await tx

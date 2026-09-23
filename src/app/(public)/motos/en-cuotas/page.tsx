@@ -14,7 +14,7 @@ import { pageMetadata, withPageSuffix } from "@/lib/seo/meta";
 import { absoluteUrl, paths } from "@/lib/seo/routes";
 
 // /motos/en-cuotas (PRODUCT_SPEC §3.5, ADR-20): la página comercial clave.
-// Sin texto editorial propio todavía (decisión pendiente, docs/decisions-needed.md A2) → noindex por regla.
+// Texto editorial: content/seo/en-cuotas.md, sólo revisado (src/lib/seo/editorial.ts); sin él, noindex por regla.
 type Props = { searchParams: Promise<Record<string, string | string[] | undefined>> };
 
 async function data({ searchParams }: Props) {
@@ -60,6 +60,9 @@ export default async function Page(props: Props) {
         Los comercios suelen pedir una entrega y financiar el resto en cuotas. Acá ves la entrega y la cuota que informa cada comercio en su
         publicación: nosotros no las calculamos ni aprobamos créditos.
       </p>
+      {d.introHtml && d.seo.page === 1 && !d.parsed.hasFilterParams ? (
+        <div className="prose mt-3 max-w-prose" dangerouslySetInnerHTML={{ __html: d.introHtml }} />
+      ) : null}
       <p className="mt-1">
         <strong>{d.search.total === 1 ? "1 moto" : `${groupThousands(d.search.total)} motos`}</strong> con cuotas informadas
         {d.parsed.hasFilterParams ? " con estos filtros" : ""}.

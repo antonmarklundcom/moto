@@ -24,7 +24,7 @@ const DOC: Record<TransitionAction, { from: ListingStatus[] | "any"; to: Listing
   submit: { from: ["draft"], to: "pending_review", who:                "Y - O O -" },
   approve: { from: ["pending_review"], to: "published", who:           "Y Y A - S" },
   reject: { from: ["pending_review"], to: "rejected", who:             "Y Y - - -" },
-  pause: { from: ["published"], to: "paused", who:                     "Y Y O O -" },
+  pause: { from: ["published"], to: "paused", who:                     "Y Y O O Y" },
   resume: { from: ["paused"], to: "published", who:                    "Y Y O O -" },
   mark_sold: { from: ["published"], to: "sold", who:                   "Y Y O O -" },
   expire: { from: ["published"], to: "expired", who:                   "- - - - Y" },

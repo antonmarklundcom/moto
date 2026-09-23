@@ -60,6 +60,11 @@ export function isReportReason(value: unknown): value is ReportReason {
 /** 3 denuncias independientes (IP distintas) de estafa/robada → pausa automática (§5). */
 export const AUTO_PAUSE_REASONS: readonly ReportReason[] = ["estafa", "robada"];
 export const AUTO_PAUSE_THRESHOLD = 3;
+/** Denuncias de mala fe (T&S §5, propietario 2026-09-23): 2 descartadas en 90 días silencian esa IP. */
+export const REPORTER_MUTE_DISMISSED = 2;
+export const REPORTER_MUTE_WINDOW_DAYS = 90;
+/** Tras una reanudación de un moderador, la publicación no se vuelve a pausar sola durante 30 días. */
+export const AUTO_PAUSE_COOLDOWN_DAYS = 30;
 /** 5 denuncias por IP por día (§5), ventana móvil de 24 h. */
 export const REPORTS_PER_IP_PER_DAY = 5;
 

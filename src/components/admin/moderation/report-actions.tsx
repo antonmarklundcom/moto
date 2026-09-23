@@ -36,9 +36,10 @@ export function ReportActions({ reportId, listingLive }: { reportId: number; lis
         Nota de resolución (obligatoria)
       </label>
       <textarea id={`nota-${reportId}`} rows={3} value={note} onChange={(e) => setNote(e.target.value)} className={`rounded border border-gray-500 p-2 ${focus}`} />
+      <p className="text-sm text-gray-700">Descartar cuenta como denuncia infundada: con 2 en 90 días, las denuncias de esa persona dejan de contar.</p>
       <div className="flex flex-wrap gap-2">
         <button type="button" disabled={busy} onClick={() => send("dismiss")} className={`${btn} border border-gray-500`}>
-          Descartar
+          Descartar (infundada)
         </button>
         {listingLive ? (
           <button type="button" disabled={busy} onClick={() => send("pause")} className={`${btn} bg-amber-700 text-white`}>
