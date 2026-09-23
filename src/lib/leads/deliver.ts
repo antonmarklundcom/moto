@@ -12,39 +12,20 @@
 //   duplicate en vez de crear un segundo contacto.
 import "server-only";
 
-import { and, desc, eq, inArray, lt, max, sql } from "drizzle-orm";
+import { and, desc, eq, inArray, lt, max, or, sql } from "drizzle-orm";
 import { db } from "@/db";
 import { leadDeliveries, leads } from "@/db/schema";
 import { crmConfigFromEnv, postLeadToCrm, type CrmConfig, type PostOptions } from "@/lib/crm/client";
 import { buildCrmPayload, CRM_SOURCE, type CrmLeadPayload } from "@/lib/crm/payload";
 import { env } from "@/lib/env";
+import { FIRST_ATTEMPT_GRACE_MS, MAX_CRM_ATTEMPTS, nextAttemptDue } from "./backoff";
 import { leadLog } from "./log";
 import type { LeadPayloadJson } from "./save";
 
-export const MAX_CRM_ATTEMPTS = 5;
+/** Un intento reclamado sin fila en lead_deliveries por más de esto = proceso muerto. */
+export const STALE_CLAIM_MS = 15 * 60_000;
 
-/**
- * Espera después del intento N antes del N+1 (§2.8: 1 min, 5 min, 30 min,
- * 2 h, 12 h). Con 5 intentos como tope se usan las cuatro primeras; la de
- * 12 h aplica a un lead `pending` que nunca se intentó (ver `nextAttemptDue`).
- */
-export const RETRY_BACKOFF_MS = [60_000, 5 * 60_000, 30 * 60_000, 2 * 3_600_000, 12 * 3_600_000] as const;
-
-/** Margen para que el envío inmediato (after()) gane antes que el cron. */
-export const FIRST_ATTEMPT_GRACE_MS = 60_000;
-
-/**
- * ¿Cuándo toca el próximo intento? `null` = nunca más (tope alcanzado).
- * Pura, para probar el backoff sin base.
- */
-export function nextAttemptDue(lead: { crmAttempts: number; createdAt: Date; lastAttemptAt: Date | null }): Date | null {
-  if (lead.crmAttempts >= MAX_CRM_ATTEMPTS) return null;
-  if (lead.crmAttempts === 0 || lead.lastAttemptAt === null) {
-    return new Date(lead.createdAt.getTime() + FIRST_ATTEMPT_GRACE_MS);
-  }
-  const wait = RETRY_BACKOFF_MS[Math.min(lead.crmAttempts, RETRY_BACKOFF_MS.length) - 1];
-  return new Date(lead.lastAttemptAt.getTime() + wait);
-}
+export { FIRST_ATTEMPT_GRACE_MS, MAX_CRM_ATTEMPTS, nextAttemptDue, RETRY_BACKOFF_MS } from "./backoff";
 
 type LeadRow = typeof leads.$inferSelect;
 
@@ -96,8 +77,12 @@ export async function deliverLead(leadId: number, options: DeliverOptions = {}):
     return { status: "skipped", leadId, reason: "not_eligible" };
   }
 
-  // Reclamo atómico del intento N+1.
+  // Reclamo atómico del intento N+1. Además del valor leído de crm_attempts,
+  // el intento N tiene que haber terminado (su fila de lead_deliveries existe):
+  // si no, hay otro envío en vuelo. Un reclamo sin fila de más de 15 min es de
+  // un proceso que murió en medio del POST y se puede retomar.
   const attemptNo = lead.crmAttempts + 1;
+  const staleClaim = new Date((options.now ?? new Date()).getTime() - STALE_CLAIM_MS);
   const [claim] = await db
     .update(leads)
     .set({ crmAttempts: attemptNo })
@@ -107,6 +92,12 @@ export async function deliverLead(leadId: number, options: DeliverOptions = {}):
         eq(leads.crmAttempts, lead.crmAttempts),
         inArray(leads.crmStatus, ["pending", "failed"]),
         eq(leads.isSpam, false),
+        lead.crmAttempts === 0
+          ? undefined
+          : or(
+              sql`EXISTS (SELECT 1 FROM ${leadDeliveries} WHERE ${leadDeliveries.leadId} = ${leadId} AND ${leadDeliveries.attemptNo} = ${lead.crmAttempts})`,
+              lt(leads.updatedAt, staleClaim),
+            ),
       ),
     );
   if (claim.affectedRows === 0) return { status: "skipped", leadId, reason: "claimed_elsewhere" };
