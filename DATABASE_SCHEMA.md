@@ -561,12 +561,14 @@ draft ──submit──> pending_review ──approve──> published ──> 
 | `draft → pending_review` | sí | — | sí | sí | — |
 | `pending_review → published` | sí | sí | sólo si `auto_approve` | no | sí (auto-aprobación) |
 | `pending_review → rejected` | sí | sí | no | no | — |
-| `published → paused` | sí | sí | sí | sí | — |
-| `paused → published` | sí | sí | sí | sí | — |
+| `published → paused` | sí | sí | sí | sí | sí (denuncias, T&S §5) |
+| `paused → published` | sí | sí | sí¹ | sí¹ | — |
 | `published → sold` | sí | sí | sí | sí | — |
 | `published → expired` | — | — | — | — | sí (job diario) |
 | `expired/sold → published` (renovar) | sí | sí | sí | sí | — |
 | cualquiera → `deleted_at` | sí | sí | sí (propia) | sí (propia) | — |
+
+¹ Salvo que la última pausa haya sido la automática por denuncias: esa la reanuda sólo admin o moderador (T&S §5).
 
 **Reglas duras:**
 - Toda transición escribe en `activity_log`.

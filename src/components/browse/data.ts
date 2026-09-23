@@ -29,6 +29,7 @@ import {
   resolveFacetSlugs,
   searchListings,
 } from "@/lib/listings/query";
+import { editorialKeys, editorialText } from "@/lib/seo/editorial";
 import { countWords, isIndexable, isMotosIndexIndexable, type ProgrammaticPageType } from "@/lib/seo/indexability";
 import { type ListingPageSeo, resolveListingPageSeo } from "@/lib/seo/meta";
 import { facetRoute, listingPageHref, type MotosRoute, motosRoutePath, paths, withQuery } from "@/lib/seo/routes";
@@ -248,6 +249,19 @@ async function alternativesFor(kind: BrowseKind, resolved: ResolvedFacets): Prom
   return out.slice(0, 6);
 }
 
+/** Cruces y condición no tienen `intro_html` en la base: su texto vive en `content/seo/` (decisión A2). */
+function fileIntro(route: BrowseRoute): string | null {
+  const key =
+    route.kind === "condition"
+      ? editorialKeys.condition(route.condition)
+      : route.kind === "brand_city"
+        ? editorialKeys.brandCity(route.brand, route.city)
+        : route.kind === "category_city"
+          ? editorialKeys.categoryCity(route.category, route.city)
+          : null;
+  return key ? (editorialText(key)?.html ?? null) : null;
+}
+
 const INDEX_TYPE: Record<Exclude<BrowseKind, "motos">, ProgrammaticPageType> = {
   brand: "brand",
   category: "category",
@@ -323,7 +337,7 @@ async function load(route: BrowseRoute, raw: SearchParamsInput): Promise<BrowseD
   const basePath = routePath(route);
   const kind: BrowseKind = route.kind;
   const introHtml =
-    kind === "brand" ? resolved.brand?.introHtml ?? null : kind === "category" ? resolved.category?.introHtml ?? null : kind === "city" ? resolved.city?.introHtml ?? null : null;
+    kind === "brand" ? resolved.brand?.introHtml ?? null : kind === "category" ? resolved.category?.introHtml ?? null : kind === "city" ? resolved.city?.introHtml ?? null : fileIntro(route);
 
   const [liveCount, search] = await Promise.all([
     countLiveListings(baseFilters),

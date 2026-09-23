@@ -2,17 +2,30 @@
 // teléfono opcional, 5 por IP por día; 3 denuncias independientes (IP
 // distintas) de `estafa`/`robada` pausan la publicación por la máquina de
 // estados con actor sistema. Nunca se revela quién denunció.
+//
+// Contra la mala fe (propietario 2026-09-23): una IP con denuncias
+// descartadas queda silenciada sin avisarle; tras una reanudación humana,
+// las denuncias viejas no cuentan y hay 30 días sin pausa automática.
 import "server-only";
 
-import { and, count, countDistinct, eq, gte, inArray, isNull, ne } from "drizzle-orm";
+import { and, count, countDistinct, desc, eq, gt, gte, inArray, isNotNull, isNull, ne } from "drizzle-orm";
 import { db } from "@/db";
-import { listings, reports } from "@/db/schema";
+import { activityLog, listings, reports } from "@/db/schema";
 import { hashWithSalt } from "@/lib/hash";
 import { normalizePhone } from "@/lib/phone";
 import { RateLimiter } from "@/lib/rate-limit";
 import { parsePublicRef } from "@/lib/slug";
-import { TransitionError, TransitionForbiddenError, transition } from "@/lib/listings/state";
-import { AUTO_PAUSE_REASONS, AUTO_PAUSE_THRESHOLD, isReportReason, REPORTS_PER_IP_PER_DAY, type ReportReason } from "./rules";
+import { REPORTS_AUTO_PAUSE_JOB, TransitionError, TransitionForbiddenError, transition } from "@/lib/listings/state";
+import {
+  AUTO_PAUSE_COOLDOWN_DAYS,
+  AUTO_PAUSE_REASONS,
+  AUTO_PAUSE_THRESHOLD,
+  isReportReason,
+  REPORTER_MUTE_DISMISSED,
+  REPORTER_MUTE_WINDOW_DAYS,
+  REPORTS_PER_IP_PER_DAY,
+  type ReportReason,
+} from "./rules";
 
 const DAY_MS = 86_400_000;
 // Sin IP_HASH_SALT no hay hash que guardar: el tope por IP cae a memoria.
@@ -30,13 +43,51 @@ export type ReportInput = {
 };
 
 export type ReportResult =
-  | { ok: true; paused: boolean; autoPause: "not_needed" | "paused" | "blocked" }
+  | { ok: true; paused: boolean; autoPause: AutoPauseOutcome }
   | { ok: false; status: 400 | 404 | 429; error: string; field?: string };
 
-export type AutoPauseOutcome = "not_needed" | "paused" | "blocked";
+/** `cooldown`: llegó al umbral pero un moderador la reanudó hace poco; queda al tope de la cola. */
+export type AutoPauseOutcome = "not_needed" | "paused" | "blocked" | "cooldown";
+
+export const MUTED_REPORT_NOTE = "Automático: quien denuncia tiene denuncias descartadas recientes (T&S §5).";
+
+/** Última reanudación hecha por una persona (no por el propio dueño con su enlace). */
+async function lastStaffResume(listingId: number): Promise<Date | null> {
+  const [row] = await db
+    .select({ at: activityLog.createdAt })
+    .from(activityLog)
+    .where(
+      and(
+        eq(activityLog.entityType, "listing"),
+        eq(activityLog.entityId, listingId),
+        eq(activityLog.action, "resumed"),
+        isNotNull(activityLog.userId),
+      ),
+    )
+    .orderBy(desc(activityLog.createdAt), desc(activityLog.id))
+    .limit(1);
+  return row?.at ?? null;
+}
+
+/** ¿Esta IP ya tiene denuncias descartadas por un moderador en la ventana? */
+async function isMutedReporter(ipHash: string, now: Date): Promise<boolean> {
+  const [{ n }] = await db
+    .select({ n: count() })
+    .from(reports)
+    .where(
+      and(
+        eq(reports.reporterIpHash, ipHash),
+        eq(reports.status, "dismissed"),
+        isNotNull(reports.resolvedBy),
+        gte(reports.createdAt, new Date(now.getTime() - REPORTER_MUTE_WINDOW_DAYS * DAY_MS)),
+      ),
+    );
+  return Number(n) >= REPORTER_MUTE_DISMISSED;
+}
 
 /** Cuenta denuncias independientes de estafa/robada y, al llegar a 3, intenta pausar. */
-export async function applyAutoPause(listingId: number): Promise<AutoPauseOutcome> {
+export async function applyAutoPause(listingId: number, now: Date = new Date()): Promise<AutoPauseOutcome> {
+  const resumedAt = await lastStaffResume(listingId);
   const [{ n }] = await db
     .select({ n: countDistinct(reports.reporterIpHash) })
     .from(reports)
@@ -45,17 +96,19 @@ export async function applyAutoPause(listingId: number): Promise<AutoPauseOutcom
         eq(reports.listingId, listingId),
         inArray(reports.reasonCode, [...AUTO_PAUSE_REASONS]),
         ne(reports.status, "dismissed"),
+        // DATETIME redondea al segundo: 1 s de margen para no contar denuncias de antes de la reanudación.
+        ...(resumedAt ? [gt(reports.createdAt, new Date(resumedAt.getTime() + 1000))] : []),
       ),
     );
   if (Number(n) < AUTO_PAUSE_THRESHOLD) return "not_needed";
+  if (resumedAt && now.getTime() - resumedAt.getTime() < AUTO_PAUSE_COOLDOWN_DAYS * DAY_MS) return "cooldown";
   try {
-    await transition({ listingId, action: "pause", actor: { kind: "system", job: "reports_auto_pause" } });
+    await transition({ listingId, action: "pause", actor: { kind: "system", job: REPORTS_AUTO_PAUSE_JOB }, now });
     return "paused";
   } catch (error) {
     if (error instanceof TransitionError && error.code === "invalid_state") return "not_needed"; // ya no está publicada
     if (error instanceof TransitionForbiddenError) {
-      // La matriz de DATABASE_SCHEMA.md §3 no le da `pause` al sistema:
-      // decisión del propietario pendiente (docs/decisions-needed.md, B3).
+      // No debería pasar: la matriz le da `pause` al sistema (DATABASE_SCHEMA.md §3).
       console.error(
         JSON.stringify({ level: "warn", msg: "reportes: pausa automática bloqueada por la matriz de permisos", listingId }),
       );
@@ -108,6 +161,9 @@ export async function submitReport(input: ReportInput): Promise<ReportResult> {
     return { ok: false, status: 429, error: "Ya enviaste varias denuncias hoy. Probá mañana." };
   }
 
+  // Silenciada: se guarda ya descartada (queda a la vista del moderador), no
+  // cuenta para la pausa y la respuesta es la misma que siempre.
+  const muted = ipHash ? await isMutedReporter(ipHash, now) : false;
   await db.insert(reports).values({
     listingId: listing.id,
     reasonCode: reason,
@@ -115,9 +171,12 @@ export async function submitReport(input: ReportInput): Promise<ReportResult> {
     reporterPhoneE164: phone,
     reporterIpHash: ipHash,
     createdAt: now,
+    ...(muted && { status: "dismissed" as const, resolvedAt: now, resolutionNote: MUTED_REPORT_NOTE }),
   });
+  if (muted) return { ok: true, paused: false, autoPause: "not_needed" };
 
-  const autoPause = AUTO_PAUSE_REASONS.includes(reason) && listing.status === "published" ? await applyAutoPause(listing.id) : "not_needed";
+  const autoPause =
+    AUTO_PAUSE_REASONS.includes(reason) && listing.status === "published" ? await applyAutoPause(listing.id, now) : "not_needed";
   return { ok: true, paused: autoPause === "paused", autoPause };
 }
 
