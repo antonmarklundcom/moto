@@ -31,6 +31,23 @@ export async function POST(request: Request): Promise<Response> {
     });
   }
 
+  // Tope global de subidas simultáneas: cada una puede tener ~36 MB en memoria
+  // en un slot compartido (revisión de seguridad). Las de más esperan un reintento.
+  if (inFlight >= MAX_IN_FLIGHT) {
+    return fail(503, "busy", "Estamos procesando muchas fotos. Probá de nuevo en unos segundos.", { "Retry-After": "5" });
+  }
+  inFlight++;
+  try {
+    return await handleUpload(request);
+  } finally {
+    inFlight--;
+  }
+}
+
+const MAX_IN_FLIGHT = 4;
+let inFlight = 0;
+
+async function handleUpload(request: Request): Promise<Response> {
   const contentType = request.headers.get("content-type") ?? "";
   if (!contentType.toLowerCase().startsWith("multipart/form-data")) {
     return fail(400, "bad_request", "Mandá la foto como formulario (multipart/form-data).");

@@ -10,9 +10,23 @@
 import "server-only";
 
 import { recordListingEvent } from "@/lib/events";
+import { clientIp, RateLimiter } from "@/lib/rate-limit";
 import { dealerWhatsAppTarget, generalWhatsAppTarget, listingWhatsAppTarget, type WhatsAppTarget } from "./contact";
 import { NO_STORE_HEADERS, ownRefererPath } from "./http";
 import { leadLog } from "./log";
+
+/**
+ * El 302 lleva el número en `Location`: sin tope, recorrer ids cosecha todos
+ * los teléfonos (revisión de seguridad). Mismo espíritu que /api/telefono.
+ */
+export const WA_REDIRECT_LIMIT = 30;
+export const WA_REDIRECT_WINDOW_MS = 10 * 60 * 1000;
+const limiter = new RateLimiter(WA_REDIRECT_LIMIT, WA_REDIRECT_WINDOW_MS);
+
+/** Sólo pruebas. */
+export function resetWaRedirectLimiterForTests(): void {
+  limiter.reset();
+}
 
 function parseId(segment: string | undefined): number | null {
   if (!segment || !/^[1-9]\d{0,15}$/.test(segment)) return null;
@@ -45,6 +59,15 @@ function notFound(): Response {
 }
 
 export async function handleWhatsAppRedirect(segments: readonly string[], request: Request): Promise<Response> {
+  if (!(segments.length === 1 && segments[0] === "general")) {
+    const limit = limiter.check(`wa|${clientIp(request.headers) ?? "sin-ip"}`);
+    if (!limit.allowed) {
+      return new Response("Abriste muchos contactos seguidos. Esperá unos minutos y probá de nuevo.", {
+        status: 429,
+        headers: { ...NO_STORE_HEADERS, "Content-Type": "text/plain; charset=utf-8", "Retry-After": String(Math.ceil(limit.retryAfterMs / 1000)) },
+      });
+    }
+  }
   let target: WhatsAppTarget | null;
   try {
     target = await resolveTarget(segments, new URL(request.url));

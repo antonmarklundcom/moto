@@ -11,7 +11,7 @@ import { assertRole, type SessionUser } from "@/lib/auth/roles";
 import { addDays, transition, TransitionError, type TransitionAction } from "@/lib/listings/state";
 import { isWhatsAppCapable, normalizePhone } from "@/lib/phone";
 import { parsePublicRef } from "@/lib/slug";
-import { DealerNotAuthorizedError, listingPublishProblem } from "./authorization";
+import { DealerNotAuthorizedError, dealerPublishProblem, listingPublishProblem } from "./authorization";
 
 export const LISTING_ADMIN_ROLES = ["admin", "moderator"] as const;
 export const PAGE_SIZE = 50;
@@ -227,6 +227,22 @@ export async function updateListingAdmin(
   return db.transaction(async (tx): Promise<EditResult> => {
     const [row] = await tx.select().from(listings).where(eq(listings.id, id)).for("update");
     if (!row || row.deletedAt) return { ok: false as const, errors: { _: "La publicación no existe." } };
+    if (input.dealerId !== row.dealerId) {
+      // Cambiar el comercio mueve inventario y leads (revisión de seguridad): sólo admin,
+      // nunca de particular a comercio (el vendedor perdería /mi-aviso) y, si está
+      // publicada, el comercio nuevo tiene que tener su autorización (ADR-12).
+      if (actor.role !== "admin") return { ok: false as const, errors: { dealerId: "Sólo un admin cambia el comercio de una publicación." } };
+      if (row.dealerId === null) return { ok: false as const, errors: { dealerId: "Una publicación de particular no pasa a un comercio." } };
+      if (input.dealerId !== null && row.status === "published") {
+        const [d] = await tx
+          .select({ slug: dealers.slug, status: dealers.status, authorizationNote: dealers.authorizationNote, authorizationDate: dealers.authorizationDate, deletedAt: dealers.deletedAt })
+          .from(dealers)
+          .where(eq(dealers.id, input.dealerId));
+        const { fixturesRefusalReason } = await import("../../../../scripts/lib/dev-fixtures-core");
+        const problem = d ? dealerPublishProblem(d, fixturesRefusalReason(process.env) === null) : "El comercio no existe.";
+        if (problem) return { ok: false as const, errors: { dealerId: problem } };
+      }
+    }
     if (input.modelId !== null) {
       const [m] = await tx.select({ brandId: models.brandId }).from(models).where(eq(models.id, input.modelId));
       if (!m || m.brandId !== row.brandId) return { ok: false as const, errors: { modelId: "El modelo no es de la marca de la publicación." } };

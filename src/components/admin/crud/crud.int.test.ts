@@ -192,6 +192,44 @@ describe("publicaciones", () => {
     const [expired] = await db.select({ status: listings.status }).from(listings).where(eq(listings.id, id));
     expect(expired.status).toBe("expired");
   });
+
+  it("cambiar el comercio de una publicación: sólo admin, nunca de particular a comercio, y con autorización si está publicada", async () => {
+    const admin = await fx.user("admin");
+    const mod = await fx.user("moderator");
+    const from = await fx.dealer();
+    const unauthorized = await fx.dealer();
+    const id = await fx.listing({ status: "published", publishedAt: new Date(), dealerId: from });
+    const [row] = await db.select().from(listings).where(eq(listings.id, id));
+    const input = (dealerId: number | null) => ({
+      title: row.title,
+      description: row.description,
+      priceGs: row.priceGs,
+      hasFinancingOnly: row.hasFinancingOnly,
+      downPaymentGs: null,
+      installmentGs: null,
+      installmentCount: null,
+      year: row.year,
+      mileageKm: row.mileageKm,
+      isNegotiable: false,
+      acceptsTradeIn: false,
+      contactPhone: "0981 777 888",
+      contactWhatsapp: true,
+      documentationStatus: row.documentationStatus,
+      cityId: row.cityId,
+      categoryId: row.categoryId,
+      modelId: row.modelId,
+      dealerId,
+      internalNote: null,
+    });
+    expect(await updateListingAdmin(mod, id, input(unauthorized))).toMatchObject({ ok: false, errors: { dealerId: expect.stringContaining("admin") } });
+    expect(await updateListingAdmin(admin, id, input(unauthorized))).toMatchObject({ ok: false, errors: { dealerId: expect.stringContaining("autorización") } });
+    const [still] = await db.select({ dealerId: listings.dealerId }).from(listings).where(eq(listings.id, id));
+    expect(still.dealerId).toBe(from);
+
+    const privateId = await fx.listing({ status: "published", publishedAt: new Date() });
+    const [p] = await db.select().from(listings).where(eq(listings.id, privateId));
+    expect(await updateListingAdmin(admin, privateId, { ...input(from), title: p.title, modelId: p.modelId })).toMatchObject({ ok: false, errors: { dealerId: expect.stringContaining("particular") } });
+  });
 });
 
 void cities;

@@ -3,7 +3,7 @@
 import { eq } from "drizzle-orm";
 import { db } from "@/db";
 import { users } from "@/db/schema";
-import { attemptKeys, isLockedOut, recordAttempt } from "./lockout";
+import { attemptKeys, isLockedOut, markAttemptSucceeded, reserveAttempt } from "./lockout";
 import { burnPasswordCheck, verifyPassword } from "./password";
 import { findLoginCandidate, isPlausibleEmail, normalizeEmail } from "./users";
 
@@ -24,6 +24,9 @@ export async function authenticate(input: {
   // bloqueo termina 15 min después del quinto fallo aunque el atacante siga.
   if (await isLockedOut(keys, now)) return { ok: false, reason: "locked" };
 
+  const attempt = await reserveAttempt(keys, now);
+  if (attempt.overLimit) return { ok: false, reason: "locked" };
+
   const candidate = isPlausibleEmail(email) ? await findLoginCandidate(email) : null;
   let ok = false;
   if (candidate) {
@@ -32,8 +35,8 @@ export async function authenticate(input: {
     await burnPasswordCheck(input.password);
   }
 
-  await recordAttempt(keys, ok, now);
   if (!ok || !candidate) return { ok: false, reason: "invalid" };
+  await markAttemptSucceeded(attempt.id);
 
   await db.update(users).set({ lastLoginAt: now }).where(eq(users.id, candidate.id));
   return { ok: true, userId: candidate.id };

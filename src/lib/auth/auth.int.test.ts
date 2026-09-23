@@ -90,6 +90,13 @@ describe("login y bloqueo (ADMIN_SPEC.md §1)", () => {
     expect(await login(admin.email, TEST_PASSWORD, ip())).toMatchObject({ ok: true });
   });
 
+  it("20 intentos en paralelo contra una cuenta: a lo sumo 5 verifican la contraseña", async () => {
+    const admin = await fx.user("admin");
+    const results = await Promise.all(Array.from({ length: 20 }, (_, i) => login(admin.email, `paralela-${i}-larga`, ip())));
+    expect(results.filter((r) => !r.ok && r.reason === "invalid").length).toBeLessThanOrEqual(5);
+    expect(results.filter((r) => !r.ok && r.reason === "locked").length).toBeGreaterThanOrEqual(15);
+  });
+
   it("auth_attempts no guarda email ni IP en claro", async () => {
     const addr = ip();
     await login(`claro-${TAG}@example.com`, "mala-clave-larga", addr);

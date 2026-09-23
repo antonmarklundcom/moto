@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { clientIp, RateLimiter } from "./rate-limit";
+import { clientIp, RateLimiter, trustedProxyHops } from "./rate-limit";
 
 describe("RateLimiter", () => {
   it("deja pasar hasta el límite y frena después, por clave", () => {
@@ -28,9 +28,23 @@ describe("RateLimiter", () => {
 });
 
 describe("clientIp", () => {
-  it("primer valor de X-Forwarded-For, si no X-Real-IP", () => {
-    expect(clientIp(new Headers({ "x-forwarded-for": "190.1.2.3, 10.0.0.1" }))).toBe("190.1.2.3");
-    expect(clientIp(new Headers({ "x-real-ip": "190.1.2.4" }))).toBe("190.1.2.4");
+  it("toma el valor que agregó el proxy (derecha), no el que manda el cliente (izquierda)", () => {
+    expect(clientIp(new Headers({ "x-forwarded-for": "1.2.3.4, 190.1.2.3" }), 1)).toBe("190.1.2.3");
+    expect(clientIp(new Headers({ "x-forwarded-for": "1.2.3.4, 190.1.2.3, 172.16.0.1" }), 2)).toBe("190.1.2.3");
+    expect(clientIp(new Headers({ "x-forwarded-for": "190.1.2.3" }), 2)).toBe("190.1.2.3");
+  });
+
+  it("valores que no son IP no cuentan; X-Real-IP de respaldo", () => {
+    expect(clientIp(new Headers({ "x-forwarded-for": "x" }), 1)).toBeNull();
+    expect(clientIp(new Headers({ "x-forwarded-for": "basura", "x-real-ip": "190.1.2.4" }), 1)).toBe("190.1.2.4");
+    expect(clientIp(new Headers({ "x-real-ip": "no-ip" }), 1)).toBeNull();
     expect(clientIp(new Headers())).toBeNull();
+  });
+
+  it("TRUSTED_PROXY_HOPS inválido → 1", () => {
+    expect(trustedProxyHops(undefined)).toBe(1);
+    expect(trustedProxyHops("0")).toBe(1);
+    expect(trustedProxyHops("2")).toBe(2);
+    expect(trustedProxyHops("abc")).toBe(1);
   });
 });

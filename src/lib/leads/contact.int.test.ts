@@ -6,7 +6,7 @@ import { dealers, listingEvents, listings } from "@/db/schema";
 import { createFixtures } from "@/lib/auth/int-fixtures";
 import { resetViewBurstsForTests } from "@/lib/events";
 import { PHONE_REVEAL_LIMIT, handlePhoneReveal, resetPhoneRevealLimitForTests } from "./phone-reveal";
-import { handleWhatsAppRedirect } from "./redirect";
+import { WA_REDIRECT_LIMIT, handleWhatsAppRedirect, resetWaRedirectLimiterForTests } from "./redirect";
 
 const CHROME =
   "Mozilla/5.0 (Linux; Android 14; SM-A146M) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Mobile Safari/537.36";
@@ -179,5 +179,18 @@ describe("POST /api/telefono/<ref>", () => {
     expect(res.status).toBe(429);
     expect(Number(res.headers.get("retry-after"))).toBeGreaterThan(0);
     expect((await reveal(refs[ids.live], { "x-forwarded-for": "181.7.7.8" })).status).toBe(200);
+  });
+});
+
+describe("/ir/wa: tope por IP contra la cosecha de teléfonos", () => {
+  it(`${WA_REDIRECT_LIMIT} por IP en 10 min; después 429 sin número; otra IP sigue`, async () => {
+    resetWaRedirectLimiterForTests();
+    const h = { "x-forwarded-for": "181.9.9.9" };
+    for (let i = 0; i < WA_REDIRECT_LIMIT; i += 1) expect((await get(`/ir/wa/${ids.live}`, h)).status).toBe(302);
+    const blocked = await get(`/ir/wa/${ids.live}`, h);
+    expect(blocked.status).toBe(429);
+    expect(blocked.headers.get("location")).toBeNull();
+    expect((await get(`/ir/wa/${ids.live}`, { "x-forwarded-for": "181.9.9.8" })).status).toBe(302);
+    resetWaRedirectLimiterForTests();
   });
 });

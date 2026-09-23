@@ -51,6 +51,24 @@ export async function isLockedOut(keys: AttemptKeys, now = new Date()): Promise<
   return false;
 }
 
+/**
+ * Reserva un intento como fallo **antes** de verificar la contraseña (así N
+ * pedidos en paralelo no verifican N contraseñas: cada uno ya cuenta) y dice
+ * si con él se pasó del tope. Devuelve el id para marcarlo bien si acierta.
+ */
+export async function reserveAttempt(keys: AttemptKeys, now = new Date()): Promise<{ id: number; overLimit: boolean }> {
+  const [res] = await db.insert(authAttempts).values({ emailHash: keys.emailHash, ipHash: keys.ipHash, succeeded: false, createdAt: now });
+  const over = async (column: typeof authAttempts.emailHash | typeof authAttempts.ipHash, value: string | null) =>
+    value !== null && (await recentFailures(column, value, now)) > LOCKOUT_MAX_FAILURES;
+  const overLimit = (await over(authAttempts.emailHash, keys.emailHash)) || (await over(authAttempts.ipHash, keys.ipHash));
+  if (overLimit) await db.delete(authAttempts).where(eq(authAttempts.id, res.insertId));
+  return { id: res.insertId, overLimit };
+}
+
+export async function markAttemptSucceeded(id: number): Promise<void> {
+  await db.update(authAttempts).set({ succeeded: true }).where(eq(authAttempts.id, id));
+}
+
 export async function recordAttempt(keys: AttemptKeys, succeeded: boolean, now = new Date()): Promise<void> {
   await db.insert(authAttempts).values({ emailHash: keys.emailHash, ipHash: keys.ipHash, succeeded, createdAt: now });
 }

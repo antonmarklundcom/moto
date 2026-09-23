@@ -40,3 +40,12 @@ Formato de cada entrada:
 - **B)** Sin pausa automática: la tercera denuncia sólo sube la publicación al tope de la cola de denuncias (B6) y una persona decide. Se corrige T&S §5.
 **Recomendación:** A, porque es la regla escrita en T&S y la que protege al comprador de una estafa en curso fuera de horario; la pausa es reversible y la baja sigue siendo humana.
 **Respuesta del propietario:** A (2026-09-23), con un agregado: "si alguien denuncia de mala fe también tiene que quedar bloqueado; no se puede denunciar a cualquiera". Implementado: el sistema pausa; la pausa automática sólo la levanta admin/moderador; una IP con 2 denuncias descartadas en 90 días queda silenciada sin aviso; tras una reanudación humana las denuncias viejas no cuentan y hay 30 días sin pausa automática (T&S §5, `DATABASE_SCHEMA.md` §3).
+
+## 2026-09-23 · Revisión de seguridad · Cerrar sesiones al cambiar la contraseña
+**Estado:** Abierta
+**Qué bloquea:** nada del lanzamiento; es endurecimiento. Hallazgo #7 de `docs/review/security-2026-09-23.md`.
+**Pregunta:** Hoy una cookie de sesión robada sigue valiendo después de `create-admin --reset` y de "Salir" (se renueva sola mientras se use). Arreglarlo necesita una columna nueva (escalado por `CLAUDE.md` §7). ¿Se agrega?
+- **A)** Columna `users.session_version INT NOT NULL DEFAULT 0` (migración aditiva). Va dentro de la cookie; `loadSessionUser` la compara; `--reset` y "Salir" la incrementan → todas las sesiones de ese usuario se cierran. Unas 30 líneas y una prueba.
+- **B)** Sin columna: se acepta el riesgo y la respuesta a un robo de sesión es desactivar el usuario (`is_active = false`) y crear otro.
+**Recomendación:** A, porque el panel es donde está todo (leads, comercios, moderación) y el costo es mínimo.
+**Respuesta del propietario:**

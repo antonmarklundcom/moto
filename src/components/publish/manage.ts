@@ -9,6 +9,7 @@ import { and, asc, eq, inArray } from "drizzle-orm";
 import { db } from "@/db";
 import { brands, cities, listingImages, listings } from "@/db/schema";
 import { diffFields, logActivity } from "@/lib/activity";
+import { deleteUnreferencedImageFiles } from "@/lib/images/cleanup";
 import { claimUploads, isValidDraftToken } from "@/lib/images/uploads";
 import { editRequiresReview, transition, TransitionError, type TransitionAction } from "@/lib/listings/state";
 import { findListingIdByManageToken } from "@/lib/manage-token";
@@ -97,9 +98,15 @@ export async function manageEdit(
   const priceDiff = Object.fromEntries(Object.entries(diff).filter(([k]) => priceKeys.includes(k)));
 
   let imagesChanged = false;
+  const removedPaths: string[] = [];
   await db.transaction(async (tx) => {
     if (Object.keys(diff).length) await tx.update(listings).set(set).where(eq(listings.id, id));
     if (removeIds.length) {
+      const gone = await tx
+        .select({ p: listingImages.storagePath })
+        .from(listingImages)
+        .where(and(eq(listingImages.listingId, id), inArray(listingImages.id, removeIds)));
+      removedPaths.push(...gone.map((g) => g.p));
       const [res] = await tx.delete(listingImages).where(and(eq(listingImages.listingId, id), inArray(listingImages.id, removeIds)));
       imagesChanged = imagesChanged || res.affectedRows > 0;
     }
@@ -112,6 +119,8 @@ export async function manageEdit(
       await logActivity(tx, { userId: null, entityType: "listing", entityId: id, action: "seller_edit", diff: { via: "manage_token", description: "description" in diff, images: imagesChanged }, ipHash });
     }
   });
+
+  await deleteUnreferencedImageFiles(removedPaths);
 
   const needsReview = editRequiresReview(l, { description: "description" in diff, images: imagesChanged });
   if (needsReview) {

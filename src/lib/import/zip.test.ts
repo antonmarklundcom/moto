@@ -62,4 +62,13 @@ describe("readZip", () => {
     expect(() => readZip(Buffer.from("no soy un zip, sólo texto largo........................"))).toThrow(ZipError);
     expect(isZip(Buffer.from("PK"))).toBe(false);
   });
+
+  it("corta cuando la suma inflada pasa el tope, aunque cada archivo esté bajo el suyo", () => {
+    const zip = makeZip([
+      { name: "a.jpg", data: Buffer.alloc(600), deflate: true },
+      { name: "b.jpg", data: Buffer.alloc(600), deflate: true },
+    ]);
+    expect(() => readZip(zip, { maxEntryBytes: 1000, maxTotalBytes: 1000 })).toThrow(ZipError);
+    expect(readZip(zip, { maxEntryBytes: 1000, maxTotalBytes: 2000 })).toHaveLength(2);
+  });
 });

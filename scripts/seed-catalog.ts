@@ -59,14 +59,12 @@ async function seedBrands() {
       .values({
         name: brand.name,
         slug: brand.slug,
-        introHtml: brand.note ?? null,
         isActive: brand.isActive,
         sortOrder: brand.sortOrder,
       })
       .onDuplicateKeyUpdate({
         set: {
           name: brand.name,
-          introHtml: brand.note ?? null,
           isActive: brand.isActive,
           sortOrder: brand.sortOrder,
         },
@@ -96,14 +94,12 @@ async function seedModels() {
         name: model.name,
         slug: model.slug,
         engineCc: model.engineCc ?? null,
-        introHtml: model.note ?? null,
         isActive: model.isActive,
       })
       .onDuplicateKeyUpdate({
         set: {
           name: model.name,
           engineCc: model.engineCc ?? null,
-          introHtml: model.note ?? null,
           isActive: model.isActive,
         },
       });
