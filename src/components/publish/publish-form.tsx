@@ -278,7 +278,7 @@ export function PublishForm({ catalog, action }: { catalog: PublishCatalog; acti
           <span className="font-medium">Tu nombre (opcional)</span>
           <input name="nombre" autoComplete="given-name" value={v("nombre")} onChange={set("nombre")} className={field} />
         </label>
-        <p className="text-sm text-neutral-700">Tu número no se muestra en la página: los compradores te escriben con el botón de WhatsApp.</p>
+        <p className="text-sm text-neutral-700">Tu número no queda escrito en la página a la vista de todos: lo ve quien toca «Escribir por WhatsApp» o «Ver teléfono».</p>
       </fieldset>
 
       <fieldset hidden={!show(5)} className="flex flex-col gap-3">
