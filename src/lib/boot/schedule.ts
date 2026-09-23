@@ -6,6 +6,7 @@ export const JOB_EVERY_MS: Readonly<Record<string, number>> = {
   "expire-featured": 60 * 60_000,
   "purge-uploads": 6 * 60 * 60_000,
   "purge-auth-attempts": 24 * 60 * 60_000,
+  "purge-removed-photos": 24 * 60 * 60_000,
 };
 
 /** Primer disparo escalonado (1 min + 20 s por job) para no arrancar todo junto con el servidor. */

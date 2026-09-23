@@ -4,6 +4,7 @@ import type { JobFn } from "./runner";
 import { expireFeatured } from "./jobs/expire-featured";
 import { expireListings } from "./jobs/expire-listings";
 import { purgeAuthAttempts } from "./jobs/purge-auth-attempts";
+import { purgeRemovedPhotos } from "./jobs/purge-removed-photos";
 import { purgeUploads } from "./jobs/purge-uploads";
 import { retryLeads } from "./jobs/retry-leads";
 
@@ -11,6 +12,7 @@ export const CRON_JOBS: Readonly<Record<string, JobFn>> = {
   "expire-featured": expireFeatured,
   "expire-listings": expireListings,
   "purge-auth-attempts": purgeAuthAttempts,
+  "purge-removed-photos": purgeRemovedPhotos,
   "purge-uploads": purgeUploads,
   "retry-leads": retryLeads,
 };

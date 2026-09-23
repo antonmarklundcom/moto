@@ -12,7 +12,7 @@ Promoted from the phase logs by C1 (2026-09-23). One line each, owner-facing. Fi
 - **Session invalidation on password reset** needs a new column: open question in `docs/decisions-needed.md`.
 
 ## Product and code (backlog)
-- A deleted or rejected listing keeps its photo files on disk, and they stay reachable if someone has the URL. There is no orphan-file job yet. Photos a seller removes via `/mi-aviso` are deleted.
+- Photos of deleted or rejected listings are still reachable by URL for 30 days; then the daily `purge-removed-photos` job deletes the files. The rows stay, since moderation uses their hash to spot repeated photos. Blocking them in `/media` right away would need an index on `listing_images.storage_path` (schema change). Admin pages show those old photos as broken images.
 - The client can pick its own draft token (≥ 32 chars). Impact is tiny; switch to server-issued tokens when touching uploads again.
 - Anyone can lock the owner's account for 15 min with 5 bad passwords. Recover with `npm run create-admin -- --reset`.
 - `/api/telefono` and `/api/leads` compare `Origin` with `SITE_URL`, so they fail if the site runs on another host or port (staging with a wrong `SITE_URL`). Keep `SITE_URL` exact per slot.
