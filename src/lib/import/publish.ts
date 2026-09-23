@@ -6,10 +6,11 @@ import { and, eq } from "drizzle-orm";
 import { db } from "@/db";
 import { dealers, listingImages, listings } from "@/db/schema";
 import { publishProblems, transition, TransitionError, type PublishProblem } from "@/lib/listings/state";
+import { listingPublishProblem } from "@/components/admin/crud/authorization";
 
 export type AutoPublishResult =
   | { status: "published" }
-  | { status: "pending_review"; reason: "no_auto_approve" | "catalog_photo_only" | "requirements"; problems?: PublishProblem[] }
+  | { status: "pending_review"; reason: "no_auto_approve" | "catalog_photo_only" | "requirements" | "dealer"; problems?: PublishProblem[]; detail?: string }
   | { status: string; reason: "not_pending" };
 
 const PROBLEM_TEXT: Record<PublishProblem, string> = {
@@ -40,6 +41,8 @@ export function describeAutoPublish(result: AutoPublishResult): string {
       return "En moderación: una usada necesita al menos una foto real de la unidad, no sólo de catálogo.";
     case "requirements":
       return `En moderación: ${(result.problems ?? []).map((p) => PROBLEM_TEXT[p]).join(", ")}.`;
+    case "dealer":
+      return `En moderación: ${result.detail ?? "el comercio no puede publicar"}`;
     case "not_pending":
       return `Estado: ${STATUS_LABEL[result.status] ?? result.status}.`;
   }
@@ -77,6 +80,9 @@ export async function autoPublishIfAllowed(listingId: number, job = "import"): P
     return { status: "pending_review", reason: "catalog_photo_only" };
   }
 
+  // ADR-12: el comercio tiene que tener su bloque de autorización (guarda de B7).
+  const dealerProblem = await listingPublishProblem(listingId);
+  if (dealerProblem) return { status: "pending_review", reason: "dealer", detail: dealerProblem };
   try {
     await transition({ listingId, action: "approve", actor: { kind: "system", job } });
     return { status: "published" };

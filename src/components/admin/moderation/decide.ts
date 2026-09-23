@@ -8,6 +8,7 @@ import { db } from "@/db";
 import { listings, models, modelSuggestions } from "@/db/schema";
 import { logActivity } from "@/lib/activity";
 import { assertRole, type SessionUser } from "@/lib/auth/roles";
+import { listingPublishProblem } from "@/components/admin/crud/authorization";
 import { transition, TransitionError, type PublishProblem } from "@/lib/listings/state";
 import { rotateManageToken } from "@/lib/manage-token";
 import { absoluteUrl, paths } from "@/lib/seo/routes";
@@ -74,6 +75,9 @@ export async function approveListing(
     const err = await mapModel(actor, input.listingId, input.modelId);
     if (err) return { ok: false, error: err };
   }
+  // ADR-12: sin bloque de autorización del comercio no se publica (guarda de B7).
+  const dealerProblem = await listingPublishProblem(input.listingId);
+  if (dealerProblem) return { ok: false, error: dealerProblem };
   try {
     await transition({ listingId: input.listingId, action: "approve", actor: { kind: "user", user: actor, ipHash: input.ipHash ?? null } });
   } catch (error) {
