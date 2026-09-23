@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { focusRing, primaryButton } from "@/components/public/styles";
+import { fieldClass, focusRing, primaryButton } from "@/components/public/styles";
 import type { PublicLeadType } from "@/lib/leads/types";
 import { FORM_FIELDS, type FieldDef, SUBMIT_LABEL } from "./fields";
 
@@ -11,7 +11,7 @@ import { FORM_FIELDS, type FieldDef, SUBMIT_LABEL } from "./fields";
 // envía como JSON: un error no borra lo que la persona escribió (A4, Known
 // issues) y el error queda junto a su campo.
 
-const field = `min-h-11 w-full rounded border border-neutral-500 bg-white px-3 ${focusRing}`;
+const field = fieldClass;
 
 export type LeadFormProps = {
   type: PublicLeadType;

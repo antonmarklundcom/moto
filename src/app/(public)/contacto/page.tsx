@@ -22,9 +22,9 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ e
   return (
     <div className={container}>
       <Breadcrumbs items={[{ name: "Contacto", href: paths.contact }]} />
-      <h1 className="mt-2 text-2xl font-bold">Contacto</h1>
+      <h1 className="mt-2 text-2xl font-extrabold tracking-tight text-slate-900 sm:text-3xl">Contacto</h1>
       <section aria-labelledby="whatsapp" className="mt-4">
-        <h2 id="whatsapp" className="text-lg font-semibold">
+        <h2 id="whatsapp" className="text-xl font-bold tracking-tight text-slate-900">
           ¿Tenés una consulta?
         </h2>
         <p className="mt-1">Escribinos por WhatsApp y te respondemos por ahí.</p>
@@ -42,7 +42,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ e
         </p>
       </section>
       <section aria-labelledby="publicidad" className="mt-8">
-        <h2 id="publicidad" className="text-lg font-semibold">
+        <h2 id="publicidad" className="text-xl font-bold tracking-tight text-slate-900">
           Anunciá tu empresa
         </h2>
         <p className="mt-1 max-w-prose">Si tenés un taller, una casa de repuestos o una empresa que le sirve a quien anda en moto, dejanos tus datos.</p>

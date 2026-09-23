@@ -24,7 +24,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ e
   return (
     <div className={container}>
       <Breadcrumbs items={[{ name: "Comercios", href: paths.dealers }]} />
-      <h1 className="mt-2 text-2xl font-bold">Comercios de motos</h1>
+      <h1 className="mt-2 text-2xl font-extrabold tracking-tight text-slate-900 sm:text-3xl">Comercios de motos</h1>
       {list.length ? (
         <ul className="mt-4 grid gap-3 sm:grid-cols-2">
           {list.map((d) => (

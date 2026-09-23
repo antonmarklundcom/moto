@@ -95,8 +95,8 @@ export function DetailPage({ data, reportResult }: { data: Ok; reportResult: "ok
         <div>
           <Gallery images={l.images} alt={alt} />
         </div>
-        <div className="flex flex-col gap-3">
-          <h1 className="text-2xl font-bold leading-tight">{l.title}</h1>
+        <div className="flex flex-col gap-3 self-start rounded-xl border border-slate-200 bg-white p-4 shadow-sm md:sticky md:top-20">
+          <h1 className="text-2xl font-extrabold leading-tight tracking-tight text-slate-900">{l.title}</h1>
           <Price data={l} />
           {hasFinancingData(l) ? <FinancingLine financing={l} informedBy={informedBy} /> : null}
           {l.hasFinancingOnly ? <p className="text-sm text-neutral-700">El {informedBy} no informó precio de contado.</p> : null}
@@ -119,22 +119,22 @@ export function DetailPage({ data, reportResult }: { data: Ok; reportResult: "ok
             </div>
           ) : null}
 
-          <aside aria-label="Antes de pagar" className="rounded border border-blue-800 bg-blue-50 p-3 text-sm text-neutral-900">
+          <aside aria-label="Antes de pagar" className="rounded-lg border-l-4 border-blue-800 bg-blue-50 p-3 text-sm text-slate-900">
             <strong>Antes de pagar:</strong> vé la moto en persona, revisá que la documentación coincida con el vendedor, no
             transfieras dinero por adelantado y desconfiá de precios muy por debajo del mercado.
           </aside>
         </div>
       </div>
 
-      <section aria-labelledby="datos" className="mt-6">
-        <h2 id="datos" className="text-lg font-semibold">
+      <section aria-labelledby="datos" className="mt-6 rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+        <h2 id="datos" className="text-xl font-bold tracking-tight text-slate-900">
           Datos
         </h2>
         <dl className="mt-2 grid grid-cols-[max-content_1fr] gap-x-4 gap-y-1">
           {facts.map(([k, v]) => (
             <div key={k} className="contents">
-              <dt className="text-neutral-700">{k}</dt>
-              <dd>{v}</dd>
+              <dt className="text-slate-600">{k}</dt>
+              <dd className="font-medium text-slate-900">{v}</dd>
             </div>
           ))}
         </dl>
@@ -146,8 +146,8 @@ export function DetailPage({ data, reportResult }: { data: Ok; reportResult: "ok
       </section>
 
       {l.description ? (
-        <section aria-labelledby="descripcion" className="mt-6">
-          <h2 id="descripcion" className="text-lg font-semibold">
+        <section aria-labelledby="descripcion" className="mt-6 rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+          <h2 id="descripcion" className="text-xl font-bold tracking-tight text-slate-900">
             Descripción del {informedBy}
           </h2>
           <p className="mt-2 max-w-prose whitespace-pre-line">{l.description}</p>
@@ -155,8 +155,8 @@ export function DetailPage({ data, reportResult }: { data: Ok; reportResult: "ok
       ) : null}
 
       {live ? (
-        <section aria-labelledby="financiar" className="mt-6 rounded-lg border border-neutral-300 p-4">
-          <h2 id="financiar" className="text-lg font-semibold">
+        <section aria-labelledby="financiar" className="mt-6 rounded-xl border border-green-200 bg-green-50 p-4">
+          <h2 id="financiar" className="text-xl font-bold tracking-tight text-slate-900">
             ¿La querés en cuotas?
           </h2>
           <p className="mt-1 max-w-prose">
@@ -170,8 +170,8 @@ export function DetailPage({ data, reportResult }: { data: Ok; reportResult: "ok
       ) : null}
 
       {l.model?.introHtml || priceRange ? (
-        <section aria-labelledby="modelo" className="mt-6 rounded-lg bg-neutral-50 p-4">
-          <h2 id="modelo" className="text-lg font-semibold">
+        <section aria-labelledby="modelo" className="mt-6 rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+          <h2 id="modelo" className="text-xl font-bold tracking-tight text-slate-900">
             Sobre la {l.brand.name} {l.model?.name}
           </h2>
           <p className="text-sm text-neutral-700">Información general del modelo, no de esta unidad.</p>
@@ -189,7 +189,7 @@ export function DetailPage({ data, reportResult }: { data: Ok; reportResult: "ok
       ) : null}
 
       <section aria-labelledby="vendedor" className="mt-6">
-        <h2 id="vendedor" className="text-lg font-semibold">
+        <h2 id="vendedor" className="text-xl font-bold tracking-tight text-slate-900">
           {l.dealer ? "Comercio" : "Vendedor"}
         </h2>
         {l.dealer ? (
@@ -215,7 +215,7 @@ export function DetailPage({ data, reportResult }: { data: Ok; reportResult: "ok
 
       {similar.length ? (
         <section id="similares" aria-labelledby="similares-titulo" className="mt-8">
-          <h2 id="similares-titulo" className="text-lg font-semibold">
+          <h2 id="similares-titulo" className="text-xl font-bold tracking-tight text-slate-900">
             Motos parecidas disponibles
           </h2>
           <ul className="mt-3 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">

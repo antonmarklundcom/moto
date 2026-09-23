@@ -31,8 +31,8 @@ export function ListingCard({ listing, headingLevel = 2 }: { listing: ListingCar
   const img = listing.image;
 
   return (
-    <article className="flex flex-col overflow-hidden rounded-lg border border-neutral-300 bg-white">
-      <div className="relative aspect-[4/3] bg-neutral-200">
+    <article className="group flex w-full flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm motion-safe:transition-shadow hover:shadow-md">
+      <div className="relative aspect-[4/3] bg-slate-200">
         {img ? (
           // A3 define el loader y las variantes; hasta entonces, la foto original con tamaño explícito.
           // eslint-disable-next-line @next/next/no-img-element
@@ -46,24 +46,24 @@ export function ListingCard({ listing, headingLevel = 2 }: { listing: ListingCar
             className="h-full w-full object-cover"
           />
         ) : (
-          <div className="flex h-full items-center justify-center text-sm text-neutral-700">Sin foto</div>
+          <div className="flex h-full items-center justify-center text-sm text-slate-700">Sin foto</div>
         )}
         {img?.isCatalogPhoto ? (
-          <span className="absolute bottom-1 left-1 rounded bg-white/95 px-1.5 py-0.5 text-xs text-neutral-900">
+          <span className="absolute bottom-2 left-2 rounded-full bg-white/95 px-2 py-0.5 text-xs font-medium text-slate-900 shadow-sm">
             Foto de catálogo
           </span>
         ) : null}
       </div>
-      <div className="flex flex-1 flex-col gap-2 p-3">
+      <div className="flex flex-1 flex-col gap-2 p-4">
         <ul className="flex flex-wrap gap-1 text-xs font-semibold" aria-label="Etiquetas">
-          {listing.isFeatured ? <li className="rounded bg-amber-200 px-1.5 py-0.5 text-neutral-900">Destacado</li> : null}
-          {sold ? <li className="rounded bg-neutral-800 px-1.5 py-0.5 text-white">Vendida</li> : null}
+          {listing.isFeatured ? <li className="rounded-full bg-amber-100 px-2 py-0.5 text-amber-900">Destacado</li> : null}
+          {sold ? <li className="rounded-full bg-slate-800 px-2 py-0.5 text-white">Vendida</li> : null}
           {listing.dealer?.isVerified ? (
-            <li className="rounded bg-blue-100 px-1.5 py-0.5 text-blue-900">Comercio verificado</li>
+            <li className="rounded-full bg-blue-50 px-2 py-0.5 text-blue-900 ring-1 ring-blue-200">Comercio verificado</li>
           ) : null}
         </ul>
         <Heading className="text-base font-semibold leading-snug">
-          <Link href={href} className={`text-neutral-900 hover:underline ${focusRing}`}>
+          <Link href={href} className={`text-slate-900 group-hover:text-blue-800 hover:underline ${focusRing}`}>
             {listing.title}
           </Link>
         </Heading>
@@ -71,7 +71,7 @@ export function ListingCard({ listing, headingLevel = 2 }: { listing: ListingCar
         {!listing.hasFinancingOnly ? (
           <FinancingLine financing={listing} informedBy={listing.dealer ? "comercio" : "vendedor"} className="text-sm" />
         ) : null}
-        <p className="text-sm text-neutral-700">{facts.join(" · ")}</p>
+        <p className="text-sm text-slate-600">{facts.join(" · ")}</p>
         <div className="mt-auto pt-1">
           {sold ? null : listing.contactWhatsapp ? (
             <a href={paths.whatsappListing(listing.id)} rel="nofollow" className={`${primaryButton} w-full`}>

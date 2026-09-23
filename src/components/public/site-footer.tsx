@@ -14,13 +14,13 @@ const FOOTER_LINKS: ReadonlyArray<{ href: string; label: string }> = [
 
 export function SiteFooter() {
   return (
-    <footer className="mt-12 border-t border-neutral-300 bg-neutral-100 text-neutral-800">
-      <div className={`${container} flex flex-col gap-3 py-6`}>
+    <footer className="mt-16 bg-slate-900 text-slate-200">
+      <div className={`${container} flex flex-col gap-4 py-8`}>
         <nav aria-label="Pie de página">
           <ul className="flex flex-wrap gap-x-4 gap-y-1">
             {FOOTER_LINKS.map((item) => (
               <li key={item.href}>
-                <Link href={item.href} className={`${tapTarget} underline-offset-2 hover:underline ${focusRing}`}>
+                <Link href={item.href} className={`${tapTarget} text-slate-100 underline-offset-2 hover:underline ${focusRing}`}>
                   {item.label}
                 </Link>
               </li>
@@ -28,7 +28,9 @@ export function SiteFooter() {
           </ul>
         </nav>
         {/* Sin textos de alcance legal acá (LEGAL_AND_COMPLIANCE.md §10): los pone B10/el propietario. */}
-        <p className="text-sm">{SITE_NAME} · Motos nuevas y usadas en Paraguay.</p>
+        <p className="text-sm text-slate-300">
+          <span className="font-bold text-white">{SITE_NAME}</span> · Motos nuevas y usadas en Paraguay.
+        </p>
       </div>
     </footer>
   );

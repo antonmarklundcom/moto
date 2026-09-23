@@ -64,7 +64,7 @@ export default async function Page(props: Props) {
           firstPosition: (d.search.page - 1) * d.search.perPage + 1,
         })}
       />
-      <h1 className="mt-2 text-2xl font-bold">{name} en Paraguay</h1>
+      <h1 className="mt-2 text-2xl font-extrabold tracking-tight text-slate-900 sm:text-3xl">{name} en Paraguay</h1>
       <p className="mt-1">
         <strong>{total === 0 ? "Ninguna moto" : total === 1 ? "1 moto" : `${groupThousands(total)} motos`}</strong>
         {d.parsed.hasFilterParams ? " con estos filtros" : ""}.

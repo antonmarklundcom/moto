@@ -29,10 +29,10 @@ export default async function Page({ searchParams }: Props) {
   return (
     <div className={container}>
       <Breadcrumbs items={[{ name: "Financiación", href: paths.financing }]} />
-      <h1 className="mt-2 text-2xl font-bold">Comprá tu moto en cuotas</h1>
+      <h1 className="mt-2 text-2xl font-extrabold tracking-tight text-slate-900 sm:text-3xl">Comprá tu moto en cuotas</h1>
       <div className="mt-4 grid gap-8 lg:grid-cols-[1fr_1fr]">
         <section aria-labelledby="formulario" className="order-1 lg:order-2">
-          <h2 id="formulario" className="text-lg font-semibold">
+          <h2 id="formulario" className="text-xl font-bold tracking-tight text-slate-900">
             Pedí que te orientemos
           </h2>
           {interest ? (
@@ -53,7 +53,7 @@ export default async function Page({ searchParams }: Props) {
           </div>
         </section>
         <section aria-labelledby="como" className="order-2 max-w-prose lg:order-1">
-          <h2 id="como" className="text-lg font-semibold">
+          <h2 id="como" className="text-xl font-bold tracking-tight text-slate-900">
             Cómo funciona comprar en cuotas
           </h2>
           <p className="mt-2">

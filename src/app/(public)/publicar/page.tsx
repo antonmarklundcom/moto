@@ -21,7 +21,7 @@ export default async function Page() {
   return (
     <div className={container}>
       <Breadcrumbs items={[{ name: "Publicar", href: paths.publish }]} />
-      <h1 className="mt-2 text-2xl font-bold">Publicá tu moto gratis</h1>
+      <h1 className="mt-2 text-2xl font-extrabold tracking-tight text-slate-900 sm:text-3xl">Publicá tu moto gratis</h1>
       <p className="mt-1 max-w-prose">Sin registrarte. La revisamos en menos de 24 h y te mandamos por WhatsApp el enlace para gestionarla.</p>
       <div className="mt-4">
         <PublishForm catalog={catalog} action={publishAction} />

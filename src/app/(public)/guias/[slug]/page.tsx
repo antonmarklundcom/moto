@@ -53,7 +53,7 @@ export default async function Page({ params }: Props) {
     <div className={container}>
       <Breadcrumbs items={[{ name: "Guías", href: paths.guides }, { name: post.title, href: paths.guide(post.slug) }]} />
       <article className="mt-2">
-        <h1 className="text-2xl font-bold">{post.title}</h1>
+        <h1 className="text-2xl font-extrabold tracking-tight text-slate-900 sm:text-3xl">{post.title}</h1>
         <p className="mt-1 text-sm text-neutral-700">
           Publicada el <time dateTime={post.publishedAt.toISOString()}>{longDatePy(post.publishedAt)}</time> · Actualizada el{" "}
           <time dateTime={post.updatedAt.toISOString()}>{longDatePy(post.updatedAt)}</time>

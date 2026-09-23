@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState, useEffect, useMemo, useRef, useState } from "react";
-import { focusRing, primaryButton, secondaryButton } from "@/components/public/styles";
+import { fieldClass, focusRing, primaryButton, secondaryButton } from "@/components/public/styles";
 import { PhotoUploader, type UploadedPhoto } from "./photo-uploader";
 import { DRAFT_STORAGE_KEY, FIELD_STEP, initialPublishState, type PublishState } from "./state";
 import { DOCUMENTATION_OPTIONS, MIN_DESCRIPTION, OTHER_MODEL, type PublishCatalog } from "./validate";
@@ -10,7 +10,7 @@ import { DOCUMENTATION_OPTIONS, MIN_DESCRIPTION, OTHER_MODEL, type PublishCatalo
 // envío común (server action). Con JS: de a un paso, autoguardado en
 // localStorage en cada cambio, modelo dependiente de la marca y fotos.
 
-const field = `min-h-11 w-full rounded border border-neutral-500 bg-white px-3 ${focusRing}`;
+const field = fieldClass;
 const STEPS = ["Fotos", "La moto", "Precio", "Contacto", "Descripción"];
 
 type Saved = { values: Record<string, string>; draftToken: string; photos: UploadedPhoto[]; step: number };
@@ -102,7 +102,7 @@ export function PublishForm({ catalog, action }: { catalog: PublishCatalog; acti
       ) : null}
 
       <fieldset hidden={!show(1)} className="flex flex-col gap-3">
-        <legend className="text-lg font-semibold">1. Fotos</legend>
+        <legend className="text-xl font-bold tracking-tight text-slate-900">1. Fotos</legend>
         {step === null ? (
           <p className="rounded border border-amber-700 bg-amber-50 p-3 text-sm">
             Para subir fotos hace falta JavaScript. Podés enviar la publicación igual y mandarnos las fotos por WhatsApp: sin fotos no la podemos publicar.
@@ -113,7 +113,7 @@ export function PublishForm({ catalog, action }: { catalog: PublishCatalog; acti
       </fieldset>
 
       <fieldset hidden={!show(2)} className="flex flex-col gap-3">
-        <legend className="text-lg font-semibold">2. La moto</legend>
+        <legend className="text-xl font-bold tracking-tight text-slate-900">2. La moto</legend>
         <label className="flex flex-col gap-1">
           <span className="font-medium">Marca</span>
           <select name="marca" value={v("marca")} onChange={set("marca")} className={field} {...aria("marca")}>
@@ -217,7 +217,7 @@ export function PublishForm({ catalog, action }: { catalog: PublishCatalog; acti
       </fieldset>
 
       <fieldset hidden={!show(3)} className="flex flex-col gap-3">
-        <legend className="text-lg font-semibold">3. Precio</legend>
+        <legend className="text-xl font-bold tracking-tight text-slate-900">3. Precio</legend>
         <label className="flex flex-col gap-1">
           <span className="font-medium">Precio de contado (Gs.)</span>
           <input name="precio" inputMode="numeric" placeholder="12.500.000" value={v("precio")} onChange={set("precio")} className={field} {...aria("precio")} />
@@ -252,7 +252,7 @@ export function PublishForm({ catalog, action }: { catalog: PublishCatalog; acti
       </fieldset>
 
       <fieldset hidden={!show(4)} className="flex flex-col gap-3">
-        <legend className="text-lg font-semibold">4. Contacto</legend>
+        <legend className="text-xl font-bold tracking-tight text-slate-900">4. Contacto</legend>
         <label className="flex flex-col gap-1">
           <span className="font-medium">Ciudad</span>
           <select name="ciudad" value={v("ciudad")} onChange={set("ciudad")} className={field} {...aria("ciudad")}>
@@ -282,7 +282,7 @@ export function PublishForm({ catalog, action }: { catalog: PublishCatalog; acti
       </fieldset>
 
       <fieldset hidden={!show(5)} className="flex flex-col gap-3">
-        <legend className="text-lg font-semibold">5. Descripción</legend>
+        <legend className="text-xl font-bold tracking-tight text-slate-900">5. Descripción</legend>
         <label className="flex flex-col gap-1">
           <span className="font-medium">Contá cómo está la moto</span>
           <textarea name="descripcion" rows={6} value={v("descripcion")} onChange={set("descripcion")} className={`${field} py-2`} {...aria("descripcion")} />

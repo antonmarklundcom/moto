@@ -49,7 +49,7 @@ export function BrowsePage({ data }: { data: Ok }) {
           firstPosition,
         })}
       />
-      <h1 className="mt-2 text-2xl font-bold">{copy.h1}</h1>
+      <h1 className="mt-2 text-2xl font-extrabold tracking-tight text-slate-900 sm:text-3xl">{copy.h1}</h1>
       <p className="mt-1 text-neutral-800" aria-live="polite">
         <strong>{resultsLabel(search.total)}</strong>
         {parsed.hasFilterParams ? " con estos filtros" : ""}
@@ -114,7 +114,7 @@ export function BrowsePage({ data }: { data: Ok }) {
 
       {search.items.length > 0 && data.alternatives.length ? (
         <section aria-labelledby="alternativas" className="mt-8">
-          <h2 id="alternativas" className="text-lg font-semibold">
+          <h2 id="alternativas" className="text-xl font-bold tracking-tight text-slate-900">
             Otras búsquedas con motos
           </h2>
           <LinkList items={data.alternatives} />
@@ -123,7 +123,7 @@ export function BrowsePage({ data }: { data: Ok }) {
 
       {data.related ? (
         <section aria-labelledby="relacionados" className="mt-8">
-          <h2 id="relacionados" className="text-lg font-semibold">
+          <h2 id="relacionados" className="text-xl font-bold tracking-tight text-slate-900">
             {data.related.title}
           </h2>
           <LinkList items={data.related.items} />

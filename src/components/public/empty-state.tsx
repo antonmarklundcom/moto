@@ -25,7 +25,7 @@ export function EmptyState({
   const Heading = headingLevel === 2 ? "h2" : "h3";
   const message = searchText ? `Hola, busco una moto: ${searchText}` : undefined;
   return (
-    <section className="flex flex-col gap-3 rounded-lg border border-neutral-300 bg-neutral-50 p-4" aria-live="polite">
+    <section className="flex flex-col gap-3 rounded-xl border border-slate-200 bg-white p-4 shadow-sm" aria-live="polite">
       <Heading className="text-lg font-semibold text-neutral-900">{title}</Heading>
       {children}
       <div className="flex flex-wrap gap-2">
