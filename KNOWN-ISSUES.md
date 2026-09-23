@@ -13,7 +13,6 @@ Promoted from the phase logs by C1 (2026-09-23). One line each, owner-facing. Fi
 
 ## Product and code (backlog)
 - A deleted or rejected listing keeps its photo files on disk, and they stay reachable if someone has the URL. There is no orphan-file job yet. Photos a seller removes via `/mi-aviso` are deleted.
-- WhatsApp click counts can be inflated by a script that fakes a browser and a Referer. Dedupe clicks per session and listing before showing numbers to dealers.
 - The client can pick its own draft token (≥ 32 chars). Impact is tiny; switch to server-issued tokens when touching uploads again.
 - Anyone can lock the owner's account for 15 min with 5 bad passwords. Recover with `npm run create-admin -- --reset`.
 - `/api/telefono` and `/api/leads` compare `Origin` with `SITE_URL`, so they fail if the site runs on another host or port (staging with a wrong `SITE_URL`). Keep `SITE_URL` exact per slot.
