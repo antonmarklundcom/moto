@@ -95,4 +95,8 @@ Brand, city and type pages get into Google automatically once they have enough r
 
 - **"Application error" page:** in hPanel → the app → **Runtime logs**, look for lines starting with `boot:`. They say which step failed (database, migrations, admin).
 - **Database errors:** usually a wrong password in `DATABASE_URL`. Fix it in hPanel and deploy again (a restart isn't enough).
+- **Forgot the admin password, or the account is locked:** a lock lifts by itself after 15 minutes. To set a new password:
+  1. In hPanel, set `ADMIN_EMAIL` (your email), `ADMIN_PASSWORD` (the new password) and `ADMIN_PASSWORD_RESET=true`.
+  2. Deploy again and log in.
+  3. Delete `ADMIN_PASSWORD_RESET` and `ADMIN_PASSWORD`.
 - **To turn off the automatic setup or jobs:** `AUTO_SETUP=false` or `INTERNAL_CRON=false`. The old way still works: `POST /api/cron/<job>` with `Authorization: Bearer <CRON_SECRET>`.
