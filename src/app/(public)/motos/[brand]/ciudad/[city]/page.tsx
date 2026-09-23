@@ -1,0 +1,19 @@
+import type { Metadata } from "next";
+import { type BrowseRoute, browseRouteFrom } from "@/components/browse/route";
+import { browseMetadata, BrowseRoutePage, type SearchParams } from "@/components/browse/route-page";
+
+// Marca × ciudad (T-106, condicional por umbral).
+type Props = { params: Promise<{ brand: string; city: string }>; searchParams: SearchParams };
+
+async function route(params: Props["params"]): Promise<BrowseRoute | null> {
+  const p = await params;
+  return browseRouteFrom([p.brand, "ciudad", p.city], "brand_city");
+}
+
+export async function generateMetadata({ params, searchParams }: Props): Promise<Metadata> {
+  return browseMetadata(await route(params), searchParams);
+}
+
+export default async function Page({ params, searchParams }: Props) {
+  return <BrowseRoutePage route={await route(params)} searchParams={searchParams} />;
+}
