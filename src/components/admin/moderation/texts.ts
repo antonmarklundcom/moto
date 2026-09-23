@@ -2,6 +2,8 @@
 // Fórmula del rechazo: qué pasó → cómo arreglarlo → invitación a reenviar.
 // Nunca acusatorio; en `sospecha_fraude` nunca se dice qué señal se vio.
 
+import { paths } from "@/lib/seo/routes";
+
 export const REJECTION_CODES = [
   "sin_fotos",
   "fotos_ajenas",
@@ -66,7 +68,7 @@ export function isRejectionCode(value: unknown): value is RejectionCode {
 
 /** Enlace privado G-1. `/mi-aviso` no está en el contrato de rutas todavía (B4 lo publica): link-pass. */
 export function manageLinkPath(token: string): string {
-  return `/mi-aviso/${encodeURIComponent(token)}`;
+  return paths.manage(token);
 }
 
 /** Mensaje de WhatsApp al aprobar una publicación de particular (G-1), con el enlace privado. */

@@ -45,6 +45,8 @@ export const STATIC_PATHS = {
   terms: "/terminos",
   privacy: "/privacidad",
   contact: "/contacto",
+  /** Confirmación de un lead (A4). Nunca se indexa ni va al sitemap. */
+  thanks: "/gracias",
 } as const;
 
 export const paths = {
@@ -68,6 +70,8 @@ export const paths = {
     if (!ref) throw new Error(`routes: public_ref inválido: "${listing.publicRef}"`);
     return `/aviso/${seg(listing.slug, "publicación")}-${ref.toLowerCase()}`;
   },
+  /** Enlace privado del vendedor (G-1). Nunca se enlaza públicamente ni va al sitemap. */
+  manage: (token: string) => `/mi-aviso/${encodeURIComponent(token)}`,
   /** Redirecciones rastreadas de WhatsApp (ADR-07). Nunca `wa.me` directo. */
   whatsappListing: (listingId: number) => `/ir/wa/${positiveId(listingId)}`,
   whatsappDealer: (dealerId: number) => `/ir/wa/comercio/${positiveId(dealerId)}`,

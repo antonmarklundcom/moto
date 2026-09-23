@@ -301,6 +301,11 @@ function canonicalMotosRedirect(
     next.facets = {};
     if (target.kind === "condition") delete next.filters.condition;
   }
+  // Marca + modelo, sin otra faceta de ruta: tiene página propia (B2, /motos/<marca>/<modelo>).
+  if (resolved.brand && resolved.model && !resolved.category && !resolved.city && parsed.filters.condition === undefined) {
+    path = paths.model(resolved.brand.slug, resolved.model.slug);
+    next.facets = {};
+  }
   // Sólo se comparan los parámetros propios (filtros y página). Los ajenos
   // (utm_*, gclid, fbclid…) se conservan tal cual: la atribución de campañas
   // (A4, vc_attr) los lee de la URL de llegada.

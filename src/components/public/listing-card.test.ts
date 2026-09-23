@@ -91,6 +91,14 @@ describe("Price y EmptyState", () => {
     expect(html).toContain("Precio no informado");
   });
 
+  it("cuota sin entrega (stock importado): igual 'Desde Gs. X/mes', no 'Precio no informado'", () => {
+    const html = renderToStaticMarkup(
+      createElement(Price, { data: { priceGs: null, hasFinancingOnly: true, downPaymentGs: null, installmentGs: 650_000, installmentCount: 24 } }),
+    );
+    expect(html).toContain("Desde Gs. 650.000/mes");
+    expect(html).not.toContain("Precio no informado");
+  });
+
   it("estado vacío honesto con CTA por /ir/wa/general (ADR-21)", () => {
     const html = renderToStaticMarkup(createElement(EmptyState, { searchText: "Honda CG en Luque" }));
     expect(html).toContain("Todavía no tenemos motos que coincidan.");

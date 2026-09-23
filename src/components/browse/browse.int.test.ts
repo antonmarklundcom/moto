@@ -128,6 +128,11 @@ describe("rutas", () => {
       location: "/motos/tvs/ciudad/encarnacion?cuota_max=500000",
     });
     expect(await load({ kind: "motos" }, "condicion=usada")).toEqual({ status: "redirect", location: "/motos/usadas" });
+    // Marca + modelo tiene página propia (B2): ?marca=x&modelo=y → /motos/x/y, con los filtros.
+    expect(await load({ kind: "motos" }, "marca=tvs&modelo=raider-125&cuota_max=500000")).toEqual({
+      status: "redirect",
+      location: "/motos/tvs/raider-125?cuota_max=500000",
+    });
     expect(await load({ kind: "motos" }, "marca=no-existe")).toEqual({ status: "redirect", location: "/motos" });
     // Parámetros ajenos (campañas) se conservan y solos no redirigen.
     expect(await load({ kind: "motos" }, "marca=tvs&utm_source=fb&gclid=abc")).toEqual({
