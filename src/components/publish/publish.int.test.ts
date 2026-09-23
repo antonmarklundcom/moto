@@ -2,6 +2,7 @@
 // sugerencia de modelo, pending_review), acciones del enlace privado y la
 // regla de re-moderación.
 import { eq, inArray } from "drizzle-orm";
+import { getStorage } from "@/lib/storage";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { closeDb, db } from "@/db";
 import { activityLog, listingImages, listings, modelSuggestions, pendingUploads } from "@/db/schema";
@@ -135,8 +136,11 @@ describe("/mi-aviso", () => {
 
     const id2 = await fx.listing({ status: "published", publishedAt: new Date(), description: DESC });
     const t2 = await rotateManageToken(id2);
-    const [img] = await db.select({ id: listingImages.id }).from(listingImages).where(eq(listingImages.listingId, id2));
+    const [img] = await db.select({ id: listingImages.id, path: listingImages.storagePath }).from(listingImages).where(eq(listingImages.listingId, id2));
+    await getStorage().put({ path: img.path, data: Buffer.from("x"), contentType: "image/webp" });
     expect(await manageEdit(t2, { precio: "12500000", descripcion: DESC, removeImageIds: [img.id] }, null)).toMatchObject({ ok: true, remoderation: true });
+    // La foto que sacó el vendedor deja de existir en disco (no queda servida en /media).
+    expect(await getStorage().get(img.path)).toBeNull();
     expect((await db.select({ s: listings.status }).from(listings).where(eq(listings.id, id2)))[0].s).toBe("pending_review");
     expect(await manageEdit(t2, { precio: "12500000", descripcion: "corta" }, null)).toMatchObject({ ok: false });
   });

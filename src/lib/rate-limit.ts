@@ -6,6 +6,8 @@
 // importa es el persistente de `auth_attempts` (src/lib/auth/lockout.ts); éste
 // es la primera barrera, barata.
 
+import { isIP } from "node:net";
+
 export type RateLimitResult = { allowed: boolean; remaining: number; retryAfterMs: number };
 
 export class RateLimiter {
@@ -42,14 +44,33 @@ export class RateLimiter {
 }
 
 /**
- * IP del cliente detrás del proxy de Hostinger: primer valor de
- * `X-Forwarded-For`, si no `X-Real-IP`. `null` si no hay ninguna. Sólo se usa
- * hasheada (hashWithSalt) o como clave de memoria, nunca se guarda en claro.
+ * Saltos de proxy de confianza delante de la app (`TRUSTED_PROXY_HOPS`,
+ * por defecto 1: el proxy de Hostinger; 2 si se agrega Cloudflare delante).
  */
-export function clientIp(headers: Pick<Headers, "get">): string | null {
-  const forwarded = headers.get("x-forwarded-for");
-  const first = forwarded?.split(",")[0]?.trim();
-  if (first) return first.slice(0, 64);
-  const real = headers.get("x-real-ip")?.trim();
-  return real ? real.slice(0, 64) : null;
+export function trustedProxyHops(raw: string | undefined = process.env.TRUSTED_PROXY_HOPS): number {
+  const n = Number(raw);
+  return Number.isInteger(n) && n >= 1 && n <= 5 ? n : 1;
+}
+
+/**
+ * IP del cliente detrás del proxy. `X-Forwarded-For` lo escribe el cliente y
+ * cada proxy **agrega** al final: el primer valor es inventable (el revisor
+ * de seguridad lo usó para saltar todos los topes por IP). Se toma el valor
+ * que agregó el proxy de confianza más lejano: el N-ésimo desde la derecha,
+ * con N = `TRUSTED_PROXY_HOPS`. Si no es una IP válida, `X-Real-IP` (que el
+ * proxy pisa); si tampoco, `null`. Sólo se usa hasheada o como clave de
+ * memoria, nunca se guarda en claro.
+ * `[VERIFICAR: en producción, que el proxy de Hostinger agregue (no pise) X-Forwarded-For; probar con curl -H "X-Forwarded-For: 1.2.3.4" y mirar la IP del log]`
+ */
+export function clientIp(headers: Pick<Headers, "get">, hops = trustedProxyHops()): string | null {
+  const chain = (headers.get("x-forwarded-for") ?? "")
+    .split(",")
+    .map((v) => v.trim())
+    .filter(Boolean);
+  if (chain.length) {
+    const candidate = chain[Math.max(0, chain.length - hops)].slice(0, 64);
+    if (isIP(candidate)) return candidate;
+  }
+  const real = headers.get("x-real-ip")?.trim().slice(0, 64);
+  return real && isIP(real) ? real : null;
 }

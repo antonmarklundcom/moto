@@ -10,6 +10,7 @@ import { brands, categories, cities, listings, models, modelSuggestions } from "
 import { logActivity } from "@/lib/activity";
 import { claimUploads, isValidDraftToken } from "@/lib/images/uploads";
 import { transition } from "@/lib/listings/state";
+import { RateLimiter } from "@/lib/rate-limit";
 import { publicRef, slugify, slugifyUniqueAsync } from "@/lib/slug";
 import { packIp } from "./ip";
 import type { PublishCatalog, PublishValues } from "./validate";
@@ -18,6 +19,9 @@ export { packIp };
 
 /** 3 publicaciones por IP en 24 h (T&S §8). */
 export const PUBLISH_PER_IP_PER_DAY = 3;
+/** Sin IP válida no hay "sin tope": todos comparten un solo cupo (en producción el proxy siempre pone la IP). */
+export const PUBLISH_WITHOUT_IP_PER_DAY = 50;
+const withoutIpLimiter = new RateLimiter(PUBLISH_WITHOUT_IP_PER_DAY, 86_400_000);
 
 export async function publishCatalog(): Promise<PublishCatalog> {
   const [b, m, c, ci] = await Promise.all([
@@ -54,7 +58,11 @@ export async function createFromPublish(input: {
 }): Promise<CreateResult> {
   const now = input.now ?? new Date();
   const packed = packIp(input.ip);
-  if (packed && (await publishedTodayFromIp(packed, now)) >= PUBLISH_PER_IP_PER_DAY) return { ok: false, reason: "rate_limited" };
+  if (packed) {
+    if ((await publishedTodayFromIp(packed, now)) >= PUBLISH_PER_IP_PER_DAY) return { ok: false, reason: "rate_limited" };
+  } else if (!withoutIpLimiter.check("sin-ip", now.getTime()).allowed) {
+    return { ok: false, reason: "rate_limited" };
+  }
 
   const v = input.values;
   let base: string;

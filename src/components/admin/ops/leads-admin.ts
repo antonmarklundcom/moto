@@ -179,6 +179,6 @@ export async function exportLeads(user: SessionUser | null, f: LeadFilters) {
 /** Celda CSV segura (anti-inyección de fórmulas). Pura. */
 export function csvCell(v: unknown): string {
   const s = v instanceof Date ? v.toISOString() : v === null || v === undefined ? "" : typeof v === "object" ? JSON.stringify(v) : String(v);
-  const safe = /^[=+\-@]/.test(s) ? `'${s}` : s;
+  const safe = /^[=+\-@\t\r]/.test(s) ? `'${s}` : s;
   return /[",\n;\r]/.test(safe) ? `"${safe.replace(/"/g, '""')}"` : safe;
 }

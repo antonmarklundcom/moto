@@ -22,9 +22,13 @@ export function isZip(buf: Uint8Array): boolean {
 
 /**
  * Entradas del zip (sólo archivos; carpetas y `__MACOSX/` se saltan).
- * `maxEntryBytes` corta un archivo inflado demasiado grande (zip bomb).
+ * `maxEntryBytes` corta un archivo inflado demasiado grande (zip bomb) y
+ * `maxTotalBytes`, la suma de todos.
  */
-export function readZip(buf: Buffer, { maxEntries = 2_000, maxEntryBytes = 25 * 1024 * 1024 } = {}): ZipEntry[] {
+export function readZip(
+  buf: Buffer,
+  { maxEntries = 2_000, maxEntryBytes = 25 * 1024 * 1024, maxTotalBytes = 500 * 1024 * 1024 } = {},
+): ZipEntry[] {
   let eocd = -1;
   for (let i = buf.length - 22; i >= Math.max(0, buf.length - 22 - 0xffff); i -= 1) {
     if (buf.readUInt32LE(i) === EOCD_SIG) {
@@ -39,6 +43,7 @@ export function readZip(buf: Buffer, { maxEntries = 2_000, maxEntryBytes = 25 * 
   if (total > maxEntries) throw new ZipError(`El zip tiene ${total} archivos; el máximo es ${maxEntries}.`);
 
   const out: ZipEntry[] = [];
+  let inflated = 0;
   for (let n = 0; n < total; n += 1) {
     if (offset + 46 > buf.length || buf.readUInt32LE(offset) !== CEN_SIG) throw new ZipError("El zip está dañado.");
     const flags = buf.readUInt16LE(offset + 8);
@@ -68,6 +73,9 @@ export function readZip(buf: Buffer, { maxEntries = 2_000, maxEntryBytes = 25 * 
         throw new ZipError(`No se pudo descomprimir «${name}».`);
       }
     } else throw new ZipError(`«${name}» usa una compresión no soportada.`);
+    inflated += data.length;
+    // Tope del total inflado: 2.000 × 25 MB entrarían igual en memoria (revisión de seguridad).
+    if (inflated > maxTotalBytes) throw new ZipError(`El zip descomprimido pasa de ${Math.round(maxTotalBytes / 1024 / 1024)} MB.`);
     out.push({ name, data });
   }
   return out;

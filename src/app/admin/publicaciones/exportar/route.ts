@@ -2,15 +2,12 @@
 import { withRole } from "@/lib/auth/session";
 import { exportAdminListings } from "@/components/admin/crud/listings-admin";
 import { filtersFromQuery } from "@/components/admin/crud/listing-filters";
+import { csvCell } from "@/components/admin/ops/leads-admin";
 
 export const dynamic = "force-dynamic";
 
-function cell(v: unknown): string {
-  const s = v instanceof Date ? v.toISOString() : v === null || v === undefined ? "" : String(v);
-  // Anti-inyección de fórmulas al abrir en Excel.
-  const safe = /^[=+\-@]/.test(s) ? `'${s}` : s;
-  return /[",\n;]/.test(safe) ? `"${safe.replace(/"/g, '""')}"` : safe;
-}
+// Misma celda que la exportación de leads (anti-inyección de fórmulas, \r entre comillas).
+const cell = csvCell;
 
 export const GET = withRole(["admin", "moderator"], async (user, request) => {
   const rows = await exportAdminListings(user, filtersFromQuery(new URL(request.url).searchParams));

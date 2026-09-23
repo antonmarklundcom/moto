@@ -144,11 +144,15 @@ export async function claimUploads(draftToken: string, listingId: number, option
       rows.sort((a, b) => (pos.get(a.id) ?? 0) - (pos.get(b.id) ?? 0));
     }
 
-    const [{ top }] = await tx
-      .select({ top: max(listingImages.sortOrder) })
+    const [{ top, existing }] = await tx
+      .select({ top: max(listingImages.sortOrder), existing: count() })
       .from(listingImages)
       .where(eq(listingImages.listingId, listingId));
     const start = top === null ? 0 : top + 1;
+    // Tope por publicación, no sólo por borrador: editando con borradores nuevos
+    // no se pasa de 20 (revisión de seguridad). Lo que sobra queda sin reclamar y lo purga el job.
+    rows.splice(Math.max(0, MAX_UPLOADS_PER_DRAFT - Number(existing)));
+    if (rows.length === 0) return 0;
 
     await tx.insert(listingImages).values(
       rows.map((r, i) => ({
