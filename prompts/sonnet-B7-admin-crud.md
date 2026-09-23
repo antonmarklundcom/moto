@@ -1,4 +1,4 @@
-# Phase B7 — Admin CRUD: listings, dealers, catalog. SONNET session. Lane 2 (parallel with the other B phases).
+# Phase B7 — Admin CRUD: listings, dealers, catalog. OPUS session (filename prefix is historical, `BUILD_PLAN.md` §5.1). Lane 2 (parallel with the other B phases).
 
 Read ONLY: this file, `CLAUDE.md`, `BUILD_PLAN.md` §1, §2.2 (G-15), §4, §5.1, §5.2 (B7), §13, `docs/log/A0.md`, `A1.md`,
 `ADMIN_SPEC.md` §2, §4–§6, `DATA_SEEDING.md` §5, `DATABASE_SCHEMA.md` §2.2–§2.6, §3. Execute under `BUILD_PLAN.md` §4.

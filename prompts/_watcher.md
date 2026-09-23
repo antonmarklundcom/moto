@@ -17,11 +17,12 @@ and `docs/decisions-needed.md`.
    - **not started**: none of the above.
 3. Restart every stalled phase (prompts are re-runnable). Then start not-started phases in the table's
    order while fewer than **4** lane 2 sessions are running. Spawn exactly as `prompts/_handoff.md` says
-   (model per the §5.1 table: B4 and B8 = Opus `claude-opus-5-5`, the rest Sonnet `claude-sonnet-5`).
+   (model per the §5.1 table: **every** phase = Opus `claude-opus-5-5`; the `sonnet-` filename prefix is
+   historical and does not pick the model).
    A PR that is open and complete but unmerged counts as stalled: restart the phase; its session re-runs
    `verify` and merges. You never merge.
 4. When all ten lane 2 PRs are merged and no `C1` session or PR exists: spawn C1
-   (`prompts/sonnet-C1-link-pass.md`, Sonnet).
+   (`prompts/sonnet-C1-link-pass.md`, Opus `claude-opus-5-5`).
 5. If `docs/decisions-needed.md` has entries with **Estado: Abierta**, notify the owner with each question
    verbatim (PushNotification if available; otherwise it goes in your final message, which the Routine
    pushes).

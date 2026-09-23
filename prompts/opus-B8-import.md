@@ -5,7 +5,8 @@ Read ONLY: this file, `CLAUDE.md`, `BUILD_PLAN.md` §1, §4, §5.1, §5.2 (B8), 
 Execute under the autonomy protocol `BUILD_PLAN.md` §4. Build nothing outside the plan.
 
 Owns: `src/app/admin/importar/**`, `src/app/admin/comercios/[id]/reporte/**`, `src/lib/import/**`,
-`scripts/import-dealer-stock.ts`, `docs/templates/stock-template.csv`, tests, `docs/log/B8.md`.
+`scripts/import-dealer-stock.ts`, `docs/templates/stock-template.csv`, `docs/templates/demo/**`, tests,
+`docs/log/B8.md`.
 
 **Lane 2 hard limits (§4.7):** no schema, no auth, no state machine, no URL/indexation rule, no CRM payload
 changes. Mutations go through A1's `requireRole` + `transition()`; URLs through A2's `src/lib/seo/routes.ts`;
@@ -25,9 +26,17 @@ Do:
 5. G-14 "Copiar reporte para WhatsApp": last 30 days of real views, WhatsApp clicks and financing leads from
    that dealer's motos (bots excluded), formatted per `ANALYTICS_AND_KPIS.md` §7. Real counts only.
 6. `scripts/import-dealer-stock.ts`: the same core from the CLI (dotenv first, dry-run default, `--apply`).
+7. **Demo stock (owner request 2026-09-23, `docs/templates/demo/README.md`).** Start the template's headers
+   from `docs/templates/demo/stock-demo.csv` (a `comercio` column for multi-dealer files; values by catalog
+   name, case-insensitive). If you change headers, update the demo file. The importer accepts `DEV-` refs /
+   `dev-` dealers **only** when `fixturesRefusalReason()` returns `null` (ADR-24), and refuses them with that
+   reason otherwise, from the CLI and from the admin. In that local mode it attaches the fixtures'
+   placeholder image so demo rows can publish. `npm run fixtures` then the CLI with `--apply` must fill a
+   local site with the 30 demo motos.
 
 Exit: integration tests: re-importing the same CSV creates 0 duplicates; a bad row is rejected with a reason;
-an unknown model lands in `model_suggestions`; the dealer report counts match a fixture query; verify green;
+an unknown model lands in `model_suggestions`; the dealer report counts match a fixture query; the demo CSV
+dry-runs with 0 rejections locally and is refused when the fixtures guard fails (unit test); verify green;
 PR `B8: stock import & dealer ops` merged per `prompts/_handoff.md`. Log "Codex review due (owner, §8)".
 
 ## After this phase

@@ -1,4 +1,4 @@
-# Phase B5 — Financing, insurance, dealers, contact. SONNET session. Lane 2 (parallel with the other B phases).
+# Phase B5 — Financing, insurance, dealers, contact. OPUS session (filename prefix is historical, `BUILD_PLAN.md` §5.1). Lane 2 (parallel with the other B phases).
 
 Read ONLY: this file, `CLAUDE.md`, `BUILD_PLAN.md` §1, §4, §5.1, §5.2 (B5), §13, `docs/log/A0.md`, `A2.md`, `A4.md`,
 `PRODUCT_SPEC.md` §2.3, §3.4–§3.5, §3.7, §6, `LEGAL_AND_COMPLIANCE.md` §3, `TRUST_AND_SAFETY.md` §6,

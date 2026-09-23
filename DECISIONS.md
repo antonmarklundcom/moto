@@ -271,6 +271,8 @@ Estas ocho respuestas fueron asumidas por la sesión de planificación porque el
 
 **Qué la revisaría.** Que las fases autónomas produzcan más retrabajo que el flujo tarea a tarea.
 
+**Enmienda 2026-09-23 (propietario).** Todas las fases, sus subagentes y sus fan-outs corren en Opus 5.5; Sonnet queda sólo para el watcher horario (`BUILD_PLAN.md` §1.4, §5.1). Los dos carriles siguen iguales: cambia el modelo, no el orden ni la propiedad de archivos.
+
 ---
 
 ## ADR-19 — Jobs programados en Hostinger

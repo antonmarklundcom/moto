@@ -1,4 +1,4 @@
-# Phase B10 — Content admin, guides, static pages. SONNET session. Lane 2 (parallel with the other B phases).
+# Phase B10 — Content admin, guides, static pages. OPUS session (filename prefix is historical, `BUILD_PLAN.md` §5.1). Lane 2 (parallel with the other B phases).
 
 Read ONLY: this file, `CLAUDE.md`, `BUILD_PLAN.md` §1, §4, §5.1, §5.2 (B10), §13, `docs/log/A0.md`, `A1.md`, `A2.md`,
 `CONTENT_STRATEGY.md` (all), `ADMIN_SPEC.md` §9, `PRODUCT_SPEC.md` §3.6–§3.7, `LEGAL_AND_COMPLIANCE.md` §8, §10,
@@ -24,7 +24,7 @@ Do:
    `globalIndexingAllows("content")` (ADR-26). `/como-funciona` honest copy per `PRODUCT_SPEC.md` §3.7.
 3. **10 guide drafts** (`CONTENT_STRATEGY.md` §2.3) as `content/guias/<slug>.md` + an admin action that loads
    them as `posts` in `draft`. Write guide 1 yourself as the exemplar, then fan out the other 9 as parallel
-   **Sonnet** subagents per `fable-directs-sonnet-builds` §Fan-out (never Fable). Every procedure, fee, office
+   **Opus** subagents per `fable-directs-sonnet-builds` §Fan-out (never Fable). Every procedure, fee, office
    or legal fact is marked `[VERIFICAR: fuente]`; nothing invented; voseo. They stay drafts: publishing needs a human.
 4. `/terminos` and `/privacidad`: placeholder page "Texto en revisión legal" + contact. **No legal text written**
    (`LEGAL_AND_COMPLIANCE.md` §10). `noindex` until the owner replaces them.

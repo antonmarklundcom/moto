@@ -1,4 +1,4 @@
-# Phase B9 — Leads inbox, monetization, health, config, activity. SONNET session. Lane 2 (parallel).
+# Phase B9 — Leads inbox, monetization, health, config, activity. OPUS session (filename prefix is historical, `BUILD_PLAN.md` §5.1). Lane 2 (parallel).
 
 Read ONLY: this file, `CLAUDE.md`, `BUILD_PLAN.md` §1, §2.2 (G-13), §2.3 (G-24), §4, §5.1, §5.2 (B9), §13,
 `docs/log/A0.md`, `A1.md`, `A4.md`, `ADMIN_SPEC.md` §2, §7–§8, §11–§12, `MONETIZATION.md` §9, `DECISIONS.md` ADR-22,
