@@ -4,6 +4,7 @@ import { LeadForm } from "@/components/lead-forms/lead-form";
 import { Breadcrumbs } from "@/components/public/breadcrumbs";
 import { container } from "@/components/public/styles";
 import { LEAD_NOTICE } from "@/lib/leads/consent";
+import { readFormFlash } from "@/lib/leads/form-flash";
 import { THANKS_PATH } from "@/lib/leads/handler";
 import { contentPageMetadata } from "@/lib/seo/meta";
 import { paths } from "@/lib/seo/routes";
@@ -21,6 +22,8 @@ export function generateMetadata(): Metadata {
 
 export default async function Page({ searchParams }: { searchParams: Promise<{ error?: string }> }) {
   const q = await searchParams;
+  // Sin JS, un error devuelve lo escrito en una cookie cifrada de 5 min (nunca en la URL).
+  const returned = q.error ? await readFormFlash("insurance") : {};
   return (
     <div className={container}>
       <Breadcrumbs items={[{ name: "Seguros", href: paths.insurance }]} />
@@ -34,7 +37,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ e
           type="insurance"
           pagePath={paths.insurance}
           notice={LEAD_NOTICE.insurance?.text ?? null}
-          initialErrors={errorsFromQuery(q.error)}
+          defaults={returned} initialErrors={errorsFromQuery(q.error)}
           thanksPath={`${THANKS_PATH}?tipo=seguro`}
         />
       </div>

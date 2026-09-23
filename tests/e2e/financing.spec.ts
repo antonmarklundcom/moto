@@ -66,13 +66,18 @@ test("desde una ficha: formulario precargado, descargo literal, lead guardado y 
 
 test.describe("sin JavaScript", () => {
   test.use({ javaScriptEnabled: false });
-  test("teléfono inválido vuelve con el error junto al campo; válido llega a /gracias", async ({ page }) => {
+  test("teléfono inválido vuelve con el error junto al campo y lo escrito; válido llega a /gracias", async ({ page }) => {
     await sameOriginAsSiteUrl(page);
     await page.goto("/seguros");
+    await page.getByLabel("Tu nombre").fill("[DEV] Nombre sin JS");
     await page.getByLabel(/Tu teléfono/).fill("123");
     await page.getByRole("button", { name: "Enviar consulta" }).click();
     await expect(page).toHaveURL(/\/seguros\?error=telefono$/);
     await expect(page.getByText("Revisá el número: por ejemplo 0981 123 456.")).toBeVisible();
+    // Lo escrito vuelve (cookie cifrada de 5 min, nunca en la URL).
+    await expect(page.getByLabel("Tu nombre")).toHaveValue("[DEV] Nombre sin JS");
+    await expect(page.getByLabel(/Tu teléfono/)).toHaveValue("123");
+    expect(page.url()).not.toContain("Nombre");
     const phone = randomPhone();
     await page.getByLabel(/Tu teléfono/).fill(phone.display);
     await page.getByRole("button", { name: "Enviar consulta" }).click();
