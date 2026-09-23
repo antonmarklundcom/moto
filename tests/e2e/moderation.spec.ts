@@ -33,7 +33,9 @@ test("cola: una publicación a la vez, señales, rechazo con motivo por número 
   await page.locator("body").press("a");
   const ok = page.getByRole("heading", { name: "Publicada" });
   const needsModel = page.getByRole("alert").filter({ hasText: "Para publicar falta" });
-  await expect(ok.or(needsModel)).toBeVisible();
+  // Stock de un comercio sin bloque de autorización: el guard de ADR-12 (B7) no lo deja publicar.
+  const dealerBlocked = page.getByRole("alert").filter({ hasText: "bloque de autorización" });
+  await expect(ok.or(needsModel).or(dealerBlocked)).toBeVisible();
   if (await ok.isVisible()) {
     await expect(page.getByLabel("Mensaje para el vendedor (WhatsApp)")).toHaveValue(/moto\.com\.py/);
     expect(title).toBeTruthy();
