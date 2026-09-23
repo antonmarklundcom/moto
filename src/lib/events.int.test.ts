@@ -97,3 +97,22 @@ describe("recordListingEvent", () => {
     expect(res.recorded).toBe(false);
   });
 });
+
+describe("una vez por sesión y publicación cada 30 minutos", () => {
+  it("dos clics de la misma persona suman 1; otra persona suma otro; pasada la ventana vuelve a sumar", async () => {
+    const id = await fx.listing({ status: "published", publishedAt: OLD, dealerId }, { image: false });
+    const click = (ip: string, now?: Date) =>
+      recordListingEvent({ type: "whatsapp_click", listingId: id, dealerId, now, headers: headers({ "user-agent": CHROME, "x-forwarded-for": ip, referer: "https://moto.com.py/aviso/x" }) });
+    const base = new Date();
+    await click("181.120.5.5", base);
+    await click("181.120.5.5", new Date(base.getTime() + 60_000));
+    const [a] = await db.select().from(listings).where(eq(listings.id, id));
+    expect(a.whatsappClickCount).toBe(1);
+    await click("181.120.6.6", new Date(base.getTime() + 120_000));
+    await click("181.120.5.5", new Date(base.getTime() + 35 * 60_000));
+    const [b] = await db.select().from(listings).where(eq(listings.id, id));
+    expect(b.whatsappClickCount).toBe(3);
+    // Las filas se guardan todas (sirven para ajustar la heurística).
+    expect(await db.select().from(listingEvents).where(eq(listingEvents.listingId, id))).toHaveLength(4);
+  });
+});

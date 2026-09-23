@@ -12,7 +12,7 @@ Qué se mide, cómo se define, qué se mira cada semana y qué número obliga a 
 |---|---|
 | **Publicación viva** | `status IN ('published','sold')`, `sold_at` dentro de 90 días, `deleted_at IS NULL` |
 | **Vista de ficha** | Un `listing_events.view` con `is_bot = false`, deduplicado por `session_hash` + `listing_id` en 30 minutos |
-| **Contacto** | Un `whatsapp_click` o `phone_reveal`, `is_bot = false`. **Es la conversión principal del sitio** |
+| **Contacto** | Un `whatsapp_click` o `phone_reveal`, `is_bot = false`; el clic de WhatsApp se cuenta una vez por `session_hash` + `listing_id` cada 30 minutos (contador y reporte al comercio; la fila se guarda igual). **Es la conversión principal del sitio** |
 | **Lead** | Una fila en `leads` no marcada `is_spam`. Sólo tipos comerciales (ADR-08) |
 | **Lead de financiación** | `leads.type = 'financing'`, `is_spam = false` |
 | **Lead cualificado** | Lead de financiación con teléfono contactable, modelo de interés y entrega declarada. **La contactabilidad se confirma fuera del sitio**, en VenderCRM. El sitio no puede declararlo solo |

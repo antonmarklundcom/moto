@@ -16,7 +16,7 @@
 // Desde un route handler (/ir/wa/*), con await y antes del 302.
 import "server-only";
 
-import { eq, sql } from "drizzle-orm";
+import { and, eq, gte, sql } from "drizzle-orm";
 import { db } from "@/db";
 import { listingEvents, listings, type listingEventTypeEnum } from "@/db/schema";
 import { env } from "@/lib/env";
@@ -54,6 +54,14 @@ export function isOwnReferer(referer: string | null | undefined, siteUrl: string
 }
 
 /** Más de 30 vistas por `session_hash` en 10 minutos → bot (§2.1). */
+/**
+ * Vistas y clics se cuentan una vez por sesión y publicación cada 30 minutos
+ * (ANALYTICS_AND_KPIS.md §1): recargar la ficha o tocar dos veces "Escribir
+ * por WhatsApp" no infla los números que ve el comercio. La fila del evento
+ * se guarda igual; sólo el contador y los reportes deduplican.
+ */
+export const DEDUPE_WINDOW_MS = 30 * 60 * 1000;
+
 export const VIEW_BURST_LIMIT = 30;
 export const VIEW_BURST_WINDOW_MS = 10 * 60 * 1000;
 // Un proceso Node en el slot (ADR-04): la memoria alcanza. Al reiniciar se
@@ -168,6 +176,27 @@ export async function recordListingEvent(input: RecordEventInput): Promise<Recor
       burst,
     });
 
+    const counter = COUNTER_BY_TYPE[input.type];
+    // ¿Ya contamos esta sesión en esta publicación en los últimos 30 minutos?
+    // (usa el índice listing_id + event_type + created_at).
+    let repeated = false;
+    if (counter && !isBot && input.listingId !== null && hashes.sessionHash) {
+      const [prev] = await db
+        .select({ id: listingEvents.id })
+        .from(listingEvents)
+        .where(
+          and(
+            eq(listingEvents.listingId, input.listingId),
+            eq(listingEvents.eventType, input.type),
+            gte(listingEvents.createdAt, new Date(now.getTime() - DEDUPE_WINDOW_MS)),
+            eq(listingEvents.sessionHash, hashes.sessionHash),
+            eq(listingEvents.isBot, false),
+          ),
+        )
+        .limit(1);
+      repeated = Boolean(prev);
+    }
+
     await db.insert(listingEvents).values({
       listingId: input.listingId,
       eventType: input.type,
@@ -181,8 +210,7 @@ export async function recordListingEvent(input: RecordEventInput): Promise<Recor
       createdAt: now,
     });
 
-    const counter = COUNTER_BY_TYPE[input.type];
-    if (counter && !isBot && input.listingId !== null) {
+    if (counter && !isBot && !repeated && input.listingId !== null) {
       await db
         .update(listings)
         .set({ [counter]: sql`${listings[counter]} + 1`, updatedAt: sql`${listings.updatedAt}` })

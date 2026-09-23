@@ -1,6 +1,6 @@
 // Operación de stock de un comercio: reconfirmar (G-6) y reporte (G-14).
 import "server-only";
-import { and, asc, count, eq, gte, inArray, isNull, lt } from "drizzle-orm";
+import { and, asc, count, eq, gte, inArray, isNull, lt, sql } from "drizzle-orm";
 import { db } from "@/db";
 import { dealers, leads, listingEvents, listings } from "@/db/schema";
 import { logActivity } from "@/lib/activity";
@@ -119,9 +119,13 @@ export function reportRange(now: Date, days = 30): { from: Date; to: Date } {
  * comercio (no a su página de comercio).
  */
 export async function dealerReport(dealerId: number, range: { from: Date; to: Date }): Promise<Omit<DealerReport, "dealerName">> {
+  // Una vez por sesión, publicación y franja de 30 min (DEDUPE_WINDOW_MS en
+  // src/lib/events.ts); sin session_hash (sin sal) cada fila cuenta sola.
   const eventCount = async (type: "view" | "whatsapp_click") => {
     const [row] = await db
-      .select({ n: count() })
+      .select({
+        n: sql<number>`count(distinct ${listingEvents.listingId}, coalesce(${listingEvents.sessionHash}, ${listingEvents.id}), floor(unix_timestamp(${listingEvents.createdAt}) / 1800))`,
+      })
       .from(listingEvents)
       .innerJoin(listings, eq(listings.id, listingEvents.listingId))
       .where(
@@ -133,7 +137,7 @@ export async function dealerReport(dealerId: number, range: { from: Date; to: Da
           lt(listingEvents.createdAt, range.to),
         ),
       );
-    return row?.n ?? 0;
+    return Number(row?.n ?? 0);
   };
   const [views, whatsappClicks, [leadRow], [liveRow]] = await Promise.all([
     eventCount("view"),
