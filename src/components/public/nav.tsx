@@ -2,11 +2,13 @@ import Link from "next/link";
 import { paths } from "@/lib/seo/routes";
 import { focusRing, tapTarget } from "./styles";
 
-// Navegación principal. C1 (link pass) la completa según SEO_ARCHITECTURE.md
-// §8: nunca enlazar desde acá a una página noindex por umbral.
+// Navegación principal (C1, SEO_ARCHITECTURE.md §8): sólo páginas que no
+// dependen del umbral. `/motos/en-cuotas` y los cruces quedan fuera hasta que
+// pasen el umbral: se enlazan desde la home y los filtros (contextuales).
 export const PRIMARY_NAV: ReadonlyArray<{ href: string; label: string }> = [
   { href: paths.motos, label: "Motos" },
   { href: paths.financing, label: "Financiación" },
+  { href: paths.dealers, label: "Comercios" },
   { href: paths.howItWorks, label: "Cómo funciona" },
 ];
 

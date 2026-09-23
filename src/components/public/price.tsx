@@ -16,7 +16,8 @@ export function Price({ data, className = "" }: { data: PriceData; className?: s
   if (cash) {
     return <p className={`text-xl font-bold text-neutral-900 ${className}`}>{cash}</p>;
   }
-  if (hasFinancingData(data)) {
+  // Con cuota y cantidad alcanza para "Desde X/mes" (stock importado sin entrega, B3): sigue siendo lo informado.
+  if (hasFinancingData(data) || (data.installmentGs !== null && data.installmentCount !== null && data.installmentCount > 0)) {
     return (
       <p className={`text-xl font-bold text-neutral-900 ${className}`}>
         Desde {formatGuaranies(data.installmentGs)}/mes

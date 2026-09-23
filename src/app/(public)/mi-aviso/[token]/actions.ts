@@ -7,6 +7,7 @@ import { env } from "@/lib/env";
 import { hashWithSalt } from "@/lib/hash";
 import type { TransitionAction } from "@/lib/listings/state";
 import { clientIp } from "@/lib/rate-limit";
+import { paths } from "@/lib/seo/routes";
 
 async function ipHash(): Promise<string | null> {
   const ip = clientIp(await headers());
@@ -18,7 +19,7 @@ async function ipHash(): Promise<string | null> {
 }
 
 const back = (token: string, r: { ok: boolean; message?: string; error?: string }) =>
-  redirect(`/mi-aviso/${encodeURIComponent(token)}?${r.ok ? `ok=${encodeURIComponent(r.message ?? "")}` : `error=${encodeURIComponent(r.error ?? "")}`}`);
+  redirect(`${paths.manage(token)}?${r.ok ? `ok=${encodeURIComponent(r.message ?? "")}` : `error=${encodeURIComponent(r.error ?? "")}`}`);
 
 export async function manageStateAction(form: FormData): Promise<void> {
   const token = String(form.get("token") ?? "");
