@@ -257,7 +257,13 @@ export function validateRow(rec: Rec, line: number, ctx: ValidateContext): RowRe
   const resolved = resolveDealer(ctx.catalog, rec.comercio, ctx.defaultDealerId);
   const dealer = "dealer" in resolved ? resolved.dealer : null;
   if (!dealer) problems.push((resolved as { problem: Problem }).problem);
-  else problems.push(...dealerProblems(dealer, ctx.demoRefusal));
+  else {
+    problems.push(...dealerProblems(dealer, ctx.demoRefusal));
+    // /ir/wa responde 404 para un comercio que no está `active` (A4).
+    if (dealer.status === "prospect" || dealer.status === "paused") {
+      warnings.push(`«${dealer.name}» no está activo: sus motos no muestran WhatsApp hasta activarlo en Comercios.`);
+    }
+  }
 
   if (refRaw === "") missing("la referencia");
   else if (!REF_RE.test(refRaw)) bad("La referencia", refRaw, "usá letras, números, guiones o puntos (hasta 100).");

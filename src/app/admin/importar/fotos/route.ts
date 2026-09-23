@@ -6,7 +6,6 @@ import { MAX_UPLOAD_BYTES } from "@/lib/images/process";
 import { BodyTooLargeError, readBodyCapped } from "@/lib/images/read-body";
 import { attachPhoto, photoCandidates } from "@/lib/import/photos";
 import { PHOTO_EXTENSIONS } from "@/lib/import/photo-names";
-import { sameOriginOrAbsent } from "@/lib/leads/http";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -14,13 +13,27 @@ export const runtime = "nodejs";
 // Tope del middleware de Next (10 MB) con margen para el multipart.
 const MAX_BODY_BYTES = Math.min(MAX_UPLOAD_BYTES, 10 * 1024 * 1024 - 64 * 1024);
 
+/**
+ * El cargador siempre manda Origin: tiene que ser este mismo host (como
+ * chequean las server actions de Next). Sin Origin, o de otro sitio: 403.
+ */
+function sameHostOrigin(headers: Headers): boolean {
+  const origin = headers.get("origin");
+  const host = headers.get("x-forwarded-host") ?? headers.get("host");
+  if (!origin || origin === "null" || !host) return false;
+  try {
+    return new URL(origin).host === host.split(",")[0].trim();
+  } catch {
+    return false;
+  }
+}
+
 function json(status: number, body: Record<string, unknown>): Response {
   return Response.json(body, { status, headers: { "Cache-Control": "no-store" } });
 }
 
 export const POST = withRole(["admin"], async (user, request) => {
-  // El cargador siempre manda Origin: sin él, o de otro sitio, no se acepta.
-  if (!request.headers.get("origin") || !sameOriginOrAbsent(request.headers)) {
+  if (!sameHostOrigin(request.headers)) {
     return json(403, { error: "forbidden", message: "Origen no permitido." });
   }
   const contentType = request.headers.get("content-type") ?? "";
