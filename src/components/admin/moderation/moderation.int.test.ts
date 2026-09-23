@@ -3,7 +3,7 @@
 import { and, eq, inArray } from "drizzle-orm";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { closeDb, db } from "@/db";
-import { activityLog, listingImages, listings, models, modelSuggestions, reports } from "@/db/schema";
+import { activityLog, dealers, listingImages, listings, models, modelSuggestions, reports } from "@/db/schema";
 import { activityFor, createFixtures, sessionCookieFor } from "@/lib/auth/int-fixtures";
 import { findListingIdByManageToken } from "@/lib/manage-token";
 import { POST as decisionPOST } from "@/app/admin/moderacion/decision/route";
@@ -54,6 +54,9 @@ describe("aprobar y rechazar", () => {
     const admin = await fx.user("admin");
     const dealerId = await fx.dealer();
     const id = await fx.listing({ status: "pending_review", dealerId });
+    // ADR-12: sin bloque de autorización no se publica (guarda de B7).
+    expect(await approveListing(admin, { listingId: id, siteUrl: SITE })).toMatchObject({ ok: false });
+    await db.update(dealers).set({ authorizationNote: "Autorizo (prueba)", authorizationDate: "2026-09-01" }).where(eq(dealers.id, dealerId));
     const res = await approveListing(admin, { listingId: id, siteUrl: SITE });
     expect(res).toMatchObject({ ok: true, privateLink: false });
     expect((await row(id)).manageTokenHash).toBeNull();
@@ -113,6 +116,7 @@ describe("POST directo a los route handlers", () => {
     const dealerId = await fx.dealer();
     const dealer = await fx.user("dealer", { dealerId });
     const mod = await fx.user("moderator");
+    await db.update(dealers).set({ authorizationNote: "Autorizo (prueba)", authorizationDate: "2026-09-01" }).where(eq(dealers.id, dealerId));
     const id = await fx.listing({ status: "pending_review", dealerId });
     expect((await post(decisionPOST, "/admin/moderacion/decision", { action: "approve", listingId: id }, await sessionCookieFor(dealer.id))).status).toBe(403);
     expect((await post(decisionPOST, "/admin/moderacion/decision", { action: "approve", listingId: id })).status).toBe(401);
