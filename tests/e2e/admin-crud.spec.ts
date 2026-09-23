@@ -59,6 +59,12 @@ test("publicaciones: tabla, búsqueda, ficha con línea de tiempo y CSV", async 
   await expect(page).toHaveURL(/estado=published/);
   await page.locator("tbody a").first().click();
   await expect(page.getByRole("heading", { name: "Línea de tiempo" })).toBeVisible();
+  // Fotos: con una sola foto en una publicada, borrarla se rechaza en el servidor.
+  await expect(page.getByRole("heading", { name: /^Fotos \(\d+\)$/ })).toBeVisible();
+  if ((await page.getByRole("heading", { name: /^Fotos/ }).textContent()) === "Fotos (1)") {
+    await page.getByRole("button", { name: "Borrar foto 1" }).click();
+    await expect(page.getByText("Es la única foto: subí otra antes de borrarla.")).toBeVisible();
+  }
   await page.goto("/admin/publicaciones");
   const [download] = await Promise.all([page.waitForEvent("download"), page.getByRole("link", { name: "Exportar CSV" }).click()]);
   expect(download.suggestedFilename()).toBe("publicaciones.csv");

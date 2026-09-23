@@ -5,10 +5,11 @@ import { db } from "@/db";
 import { categories, cities } from "@/db/schema";
 import { requirePageRole } from "@/lib/auth/session";
 import { CrudForm, type FieldSpec } from "@/components/admin/crud/crud-form";
+import { listingPhotos } from "@/components/admin/crud/listing-photos";
 import { listingForEdit, listingTimeline } from "@/components/admin/crud/listings-admin";
 import { formatDatePy } from "@/lib/import/messages";
 import { paths } from "@/lib/seo/routes";
-import { editAction, stateAction } from "../actions";
+import { editAction, photoFormAction, stateAction } from "../actions";
 
 const focus = "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700";
 const STATE_ACTIONS: Record<string, Array<[string, string]>> = {
@@ -18,16 +19,17 @@ const STATE_ACTIONS: Record<string, Array<[string, string]>> = {
   sold: [["renew", "Volver a publicar"]],
 };
 
-export default async function Page({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ estado?: string; error?: string }> }) {
+export default async function Page({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ estado?: string; error?: string; fotos?: string }> }) {
   const { id } = await params;
   const user = await requirePageRole(`/admin/publicaciones/${id}`, "admin", "moderator");
   const data = await listingForEdit(user, Number(id));
   if (!data) notFound();
   const { listing: l } = data;
-  const [cityOpts, categoryOpts, timeline, q] = await Promise.all([
+  const [cityOpts, categoryOpts, timeline, photos, q] = await Promise.all([
     db.select({ id: cities.id, name: cities.name }).from(cities).orderBy(asc(cities.sortOrder)),
     db.select({ id: categories.id, name: categories.name }).from(categories).where(eq(categories.isActive, true)).orderBy(asc(categories.sortOrder)),
     listingTimeline(user, l.id),
+    listingPhotos(user, l.id),
     searchParams,
   ]);
   const opts = (rows: Array<{ id: number; name: string }>, empty?: string) => [...(empty ? [{ value: "", label: empty }] : []), ...rows.map((r) => ({ value: String(r.id), label: r.name }))];
@@ -108,7 +110,7 @@ export default async function Page({ params, searchParams }: { params: Promise<{
           </>
         ) : null}
       </p>
-      {q.estado ? <p role="status" className="text-green-900">Listo.</p> : null}
+      {q.estado || q.fotos ? <p role="status" className="text-green-900">Listo.</p> : null}
       {q.error ? <p role="alert" className="text-red-800">{q.error}</p> : null}
       <div className="flex flex-wrap gap-2">
         {actions.map(([action, label]) => (
@@ -121,6 +123,45 @@ export default async function Page({ params, searchParams }: { params: Promise<{
           </form>
         ))}
       </div>
+      <section aria-labelledby="fotos" className="flex flex-col gap-2">
+        <h2 id="fotos" className="text-lg font-bold">
+          Fotos ({photos.length})
+        </h2>
+        {photos.length === 0 ? <p className="text-sm">Sin fotos.</p> : null}
+        <ol className="flex flex-wrap gap-3">
+          {photos.map((p, i) => (
+            <li key={p.id} className="flex w-40 flex-col gap-1 rounded border border-gray-300 p-2 text-sm">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={p.thumbUrl} alt={`Foto ${i + 1} de ${photos.length}`} className="aspect-[4/3] w-full rounded object-cover" />
+              <span>
+                {i === 0 ? "Portada" : `Foto ${i + 1}`}
+                {p.isCatalogPhoto ? " · catálogo" : ""}
+              </span>
+              <div className="flex flex-wrap gap-1">
+                {(
+                  [
+                    ["up", "↑", `Subir foto ${i + 1}`, i === 0],
+                    ["down", "↓", `Bajar foto ${i + 1}`, i === photos.length - 1],
+                    ["cover", "Portada", `Usar foto ${i + 1} como portada`, i === 0],
+                    ["delete", "Borrar", `Borrar foto ${i + 1}`, false],
+                  ] as const
+                ).map(([accion, label, aria, disabled]) =>
+                  disabled ? null : (
+                    <form key={accion} action={photoFormAction}>
+                      <input type="hidden" name="id" value={l.id} />
+                      <input type="hidden" name="foto" value={p.id} />
+                      <input type="hidden" name="accion" value={accion} />
+                      <button type="submit" aria-label={aria} className={`min-h-11 min-w-11 rounded border border-gray-500 px-2 ${accion === "delete" ? "text-red-800" : ""} ${focus}`}>
+                        {label}
+                      </button>
+                    </form>
+                  ),
+                )}
+              </div>
+            </li>
+          ))}
+        </ol>
+      </section>
       <div className="grid gap-8 lg:grid-cols-2">
         <section aria-labelledby="editar">
           <h2 id="editar" className="mb-2 text-lg font-bold">

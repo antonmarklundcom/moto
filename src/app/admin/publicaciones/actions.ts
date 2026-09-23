@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { requireRole } from "@/lib/auth/session";
 import type { CrudState } from "@/components/admin/crud/crud-form";
 import { bool, formValues, int, optStr, str } from "@/components/admin/crud/form-values";
+import { type PhotoAction, photoAction } from "@/components/admin/crud/listing-photos";
 import { type BulkAction, bulkListings, listingStateAction, updateListingAdmin } from "@/components/admin/crud/listings-admin";
 import type { TransitionAction } from "@/lib/listings/state";
 
@@ -54,4 +55,13 @@ export async function editAction(prev: CrudState, form: FormData): Promise<CrudS
   });
   if (!r.ok) return { ok: false, message: "Revisá los campos marcados.", errors: r.errors, values: v, version: prev.version + 1 };
   return { ok: true, message: r.changed.length ? `Guardado (${r.changed.length} cambios).` : "Sin cambios.", errors: {}, values: { ...v, internalNote: "" }, version: prev.version + 1 };
+}
+
+export async function photoFormAction(form: FormData): Promise<void> {
+  const user = await requireRole("admin", "moderator");
+  const id = Number(form.get("id"));
+  const action = String(form.get("accion")) as PhotoAction;
+  if (!["delete", "up", "down", "cover"].includes(action)) redirect(`/admin/publicaciones/${id}`);
+  const r = await photoAction(user, id, Number(form.get("foto")), action);
+  redirect(`/admin/publicaciones/${id}?${r.ok ? "fotos=ok" : `error=${encodeURIComponent(r.error)}`}#fotos`);
 }
