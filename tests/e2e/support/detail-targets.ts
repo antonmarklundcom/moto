@@ -10,7 +10,7 @@ async function main() {
   if (refusal) throw new Error(`detail-targets: ${refusal}`);
   const { and, eq, gt, isNotNull, isNull, like } = await import("drizzle-orm");
   const { closeDb, db } = await import("../../../src/db");
-  const { listings } = await import("../../../src/db/schema");
+  const { listings, reports } = await import("../../../src/db/schema");
   const { publicRef } = await import("../../../src/lib/slug");
   const DAY = 86_400_000;
   const path = (l: { slug: string; publicRef: string }) => `/aviso/${l.slug}-${l.publicRef.toLowerCase()}`;
@@ -19,6 +19,12 @@ async function main() {
     if (!row) throw new Error("detail-targets: faltan fixtures (npm run fixtures)");
     return row;
   };
+  // El límite de denuncias por IP y día (5) cuenta las de corridas anteriores
+  // desde 127.0.0.1: se borran las de hoy sobre fichas [DEV] para que la prueba se pueda repetir.
+  const { inArray, gte } = await import("drizzle-orm");
+  const devIds = (await db.select({ id: listings.id }).from(listings).where(like(listings.title, "[DEV]%"))).map((r) => r.id);
+  if (devIds.length) await db.delete(reports).where(and(inArray(reports.listingId, devIds), gte(reports.createdAt, new Date(Date.now() - DAY))));
+
   const published = await one(eq(listings.status, "published"), eq(listings.contactWhatsapp, true), isNotNull(listings.modelId));
   const callsOnly = await one(eq(listings.status, "published"), eq(listings.contactWhatsapp, false));
   const sold = await one(eq(listings.status, "sold"), gt(listings.soldAt, new Date(Date.now() - 80 * DAY)));

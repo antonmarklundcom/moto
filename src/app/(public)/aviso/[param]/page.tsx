@@ -4,6 +4,8 @@ import { notFound, permanentRedirect } from "next/navigation";
 import { after } from "next/server";
 import { loadListing } from "@/components/listing/data";
 import { DetailPage } from "@/components/listing/detail-page";
+import { publishedGuideSlugs } from "../../guias/data";
+import { SAFETY_GUIDE_SLUG } from "../../guias/links";
 import { listingDescription, listingTitle } from "@/components/listing/rules";
 import { hasFinancingData } from "@/components/public/financing-line";
 import { recordListingEvent } from "@/lib/events";
@@ -77,5 +79,6 @@ export default async function Page({ params, searchParams }: Props) {
   }
 
   const { denuncia } = await searchParams;
-  return <DetailPage data={d} reportResult={denuncia === "ok" ? "ok" : denuncia === "error" ? "error" : null} />;
+  const safetyGuideHref = (await publishedGuideSlugs()).has(SAFETY_GUIDE_SLUG) ? paths.guide(SAFETY_GUIDE_SLUG) : null;
+  return <DetailPage data={d} reportResult={denuncia === "ok" ? "ok" : denuncia === "error" ? "error" : null} safetyGuideHref={safetyGuideHref} />;
 }

@@ -6,7 +6,7 @@ meta_description: Cómo vender tu moto más rápido: fotos con buena luz, los á
 query: como vender mi moto rapido
 ---
 
-Cuando alguien busca una moto, lo primero que ve son las fotos. Si no se entiende cómo está la moto, pasa de largo aunque el precio sea bueno. Nadie puede prometerte que tu moto se venda en un plazo determinado, pero unas fotos claras, una descripción completa y un precio honesto hacen que te escriban compradores en serio y no curiosos.
+Si te preguntás cómo vender tu moto rápido, empezá por las fotos: cuando alguien busca una moto, es lo primero que ve. Si no se entiende cómo está la moto, pasa de largo aunque el precio sea bueno. Nadie puede prometerte que tu moto se venda en un plazo determinado, pero unas fotos claras, una descripción completa y un precio honesto hacen que te escriban compradores en serio y no curiosos.
 
 No necesitás una cámara profesional: alcanza con el celular, buena luz y un poco de paciencia.
 
@@ -64,9 +64,9 @@ Una buena descripción te evita contestar lo mismo diez veces por WhatsApp. El f
 
 No pongas tu teléfono ni otros datos de contacto en la descripción: el comprador te escribe con el botón **Escribir por WhatsApp** de la publicación.
 
-## Un precio honesto
+## Un precio honesto para vender tu moto más rápido
 
-El precio es lo que más filtra. Antes de ponerlo, mirá cuánto piden por motos parecidas (misma marca, modelo, año y kilometraje parecidos) en las [motos usadas publicadas](/motos/usadas). [VERIFICAR: si el sitio va a mostrar rangos de precio por modelo y con qué cantidad mínima de publicaciones — fuente: equipo de moto.com.py]
+El precio es lo que más filtra. Antes de ponerlo, compará con motos parecidas publicadas en las [motos usadas](/motos/usadas): buscá la misma marca y modelo, y fijate en las que tengan un año y un kilometraje cercanos a los de la tuya. Mirá varias, no una sola, y tené en cuenta el estado de cada una y si los papeles están al día. Tenés el método paso a paso en [cuánto vale mi moto usada](/guias/cuanto-vale-mi-moto-usada).
 
 - Un precio muy alto hace que nadie te escriba.
 - Un precio muy bajo despierta desconfianza: el comprador piensa que algo anda mal con la moto o con los papeles.

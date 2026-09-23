@@ -1,10 +1,16 @@
 import type { NextConfig } from "next";
+import { otherWwwHost } from "./src/lib/canonical-host";
 import { securityHeaders } from "./src/lib/security-headers";
 
 // Las cabeceras se calculan al hacer el build: VENDERCRM_URL tiene que estar en
 // el entorno del build para que la CSP permita vc-attribution.js (DECISIONS.md ADR-26).
 const nextConfig: NextConfig = {
   poweredByHeader: false,
+  // Un solo host: la variante con/sin "www" redirige a SITE_URL (SEO y Origin de los leads).
+  async redirects() {
+    const host = otherWwwHost(process.env.SITE_URL);
+    return host ? [{ source: "/:path*", has: [{ type: "host", value: host.from }], destination: `${host.to}/:path*`, permanent: true }] : [];
+  },
   // Sin optimización en el servidor (G-22): las variantes WebP se generan al
   // subir y el loader elige la justa. Los anchos coinciden con las variantes.
   images: {

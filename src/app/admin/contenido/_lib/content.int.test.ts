@@ -6,7 +6,8 @@ import { createFixtures, sessionCookieFor } from "@/lib/auth/int-fixtures";
 import type { SessionUser } from "@/lib/auth/roles";
 import { POST as guardarPOST } from "../guardar/route";
 import { POST as introPOST } from "../intro/route";
-import { listIntroRows, loadGuideDrafts, savePost } from "./content-admin";
+import { readdirSync } from "node:fs";
+import { GUIDES_DIR, listIntroRows, loadGuideDrafts, savePost } from "./content-admin";
 
 const fx = await createFixtures("b10");
 const TAG = `b10-${Date.now().toString(36)}`;
@@ -100,24 +101,25 @@ describe("reviewed_by (ADMIN_SPEC §9)", () => {
 });
 
 describe("borradores de content/guias", () => {
-  it("carga los 10 como draft y no pisa los existentes", async () => {
+  it("carga todos como draft y no pisa los existentes", async () => {
+    const total = readdirSync(GUIDES_DIR).filter((f) => f.endsWith(".md")).length;
     const before = (await db.select({ slug: posts.slug }).from(posts)).map((r) => r.slug);
     const first = await loadGuideDrafts(admin);
     expect(first.failed).toEqual([]);
-    expect(first.created.length + first.skipped.length).toBe(10);
+    expect(first.created.length + first.skipped.length).toBe(total);
     const created = await db.select().from(posts).where(inArray(posts.slug, first.created.length ? first.created : ["-"]));
     for (const p of created) {
       expect(p.status).toBe("draft");
       expect(p.reviewedBy).toBeNull();
-      expect(p.bodyHtml).toContain("[VERIFICAR");
     }
     const second = await loadGuideDrafts(admin);
     expect(second.created).toEqual([]);
-    expect(second.skipped.length).toBe(10);
+    expect(second.skipped.length).toBe(total);
     expect(before.every((s) => !first.created.includes(s))).toBe(true);
     // Un borrador con [VERIFICAR] no se puede publicar aunque tenga revisor.
-    if (created[0]) {
-      const r = await savePost(admin, { id: created[0].id, title: created[0].title, slug: created[0].slug, excerpt: "", bodyHtml: created[0].bodyHtml ?? "", metaTitle: "", metaDescription: "", status: "published", reviewedBy: admin.id });
+    const marked = created.find((p) => p.bodyHtml?.includes("[VERIFICAR"));
+    if (marked) {
+      const r = await savePost(admin, { id: marked.id, title: marked.title, slug: marked.slug, excerpt: "", bodyHtml: marked.bodyHtml ?? "", metaTitle: "", metaDescription: "", status: "published", reviewedBy: admin.id });
       expect(r).toMatchObject({ ok: false, status: 422 });
     }
   });

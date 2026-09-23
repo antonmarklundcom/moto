@@ -1,75 +1,98 @@
-# Notas de despliegue — Hostinger (T-005)
+# Deploy moto.com.py on Hostinger — step by step
 
-Slot de Node.js gestionado de Hostinger (ADR-04). Esta nota documenta los
-pasos; **no sustituye el acceso real al panel de Hostinger**, que esta sesión
-no tiene. La verificación de "sitio desplegado" de T-005 quedó pendiente por
-esa razón — ver la sección "Qué no se verificó" al final.
+Everything technical runs by itself on the first start: tables, the catalog (brands, models, cities, types), your admin user, the photos folder and the background jobs. You do **not** need SSH, Remote MySQL, cron jobs, Cloudinary or any other paid service.
 
-## 1. Antes del primer despliegue
+**What you need:** the Hostinger account with a free Node.js slot, the domain moto.com.py, and the GitHub repo `antonmarklundcom/moto`.
 
-1. Crear la base de datos MySQL en el panel de Hostinger (Bases de datos →
-   MySQL) y anotar host, usuario, clave y nombre. Compilar `DATABASE_URL` con
-   esos datos (ver `.env.example`).
-2. Habilitar Remote MySQL si las migraciones se corren desde fuera del
-   servidor; si no, correrlas por SSH en el propio slot.
-3. Crear el directorio de subida de imágenes fuera del control de versiones,
-   con permisos de escritura para el usuario del slot, y apuntarle
-   `STORAGE_LOCAL_PATH` (ADR-16). Por ejemplo: `/home/<usuario>/uploads`.
-4. Generar `IP_HASH_SALT` y `SESSION_SECRET` una única vez (cadenas
-   aleatorias largas) y guardarlas sólo en el panel de variables de entorno
-   del slot — nunca en el repositorio.
-5. Confirmar `SITE_NOINDEX=true` en las variables de entorno del slot. Se
-   apaga recién cuando se supere el umbral de `DATA_SEEDING.md` §3 (150
-   publicaciones vivas de ≥ 5 comercios), y es una decisión del propietario,
-   no de una sesión de implementación (`CLAUDE.md` §3.4).
+## 1. Create the database (5 min)
 
-## 2. Variables de entorno en el panel de Hostinger
+1. hPanel → **Databases → MySQL Databases**.
+2. Create a database, a user and a password. **Use a password with only letters and numbers** (no `@ : / # ?`), or the connection string breaks.
+3. Write down three things: database name, user, password. The host is `localhost` (the app runs on the same server).
 
-Cargar cada clave de `.env.example` en el panel de "Node.js App" → "Variables
-de entorno" del slot. El `.env` del repositorio nunca se sube (`.gitignore`).
+You don't need Remote MySQL. It's only for connecting from your own PC, which is no longer necessary.
 
-## 3. Build y arranque
+## 2. Create the Node.js app (5 min)
 
-Hostinger detecta `package.json` y corre:
+1. hPanel → **Websites → Add website → Node.js app → Import Git repository**.
+2. Authorize GitHub and pick `antonmarklundcom/moto`, branch `main`.
+3. Check the settings: build `npm run build`, start `npm start`, Node 20 or newer (22 recommended).
+4. **Don't deploy yet.** Add the variables first (step 3).
 
-```
-npm install
-npm run build
-npm run start
-```
+## 3. Environment variables
 
-`npm run start` sirve con `next start` en el puerto que exponga el slot
-(Hostinger lo inyecta vía `PORT`; Next.js lo respeta automáticamente).
+In the app's **Environment variables** screen, add each one. The name goes in "Key" and **only the value** goes in "Value".
 
-## 4. Migraciones
+| Key | Value |
+|---|---|
+| `DATABASE_URL` | `mysql://USER:PASSWORD@localhost:3306/DATABASE` (the values from step 1) |
+| `SITE_URL` | `https://moto.com.py` (use the temporary `…hostingersite.com` address first if the domain isn't connected yet) |
+| `SITE_NOINDEX` | `false` = Google may index the site. The code still keeps thin pages out of Google automatically. |
+| `SESSION_SECRET` | a random string, 40+ letters and numbers |
+| `IP_HASH_SALT` | another random string, 40+ characters |
+| `CRON_SECRET` | another random string, 40+ characters |
+| `ADMIN_EMAIL` | your email (your login for /admin) |
+| `ADMIN_PASSWORD` | your admin password, 12+ characters |
+| `ADMIN_NAME` | your name |
+| `WHATSAPP_SITE_NUMBER` | the site's WhatsApp number, e.g. `+595981123456` |
+| `STORAGE_DRIVER` | `local` |
+| `TRUSTED_PROXY_HOPS` | `1` |
+| `VENDERCRM_URL` / `VENDERCRM_API_KEY` | when you have them. Until then, leads are saved and sent automatically later. |
+| `GOOGLE_SITE_VERIFICATION` | optional, see step 7 |
 
-Correr `npx drizzle-kit migrate` con el `DATABASE_URL` de producción **antes**
-de apuntar el dominio al slot nuevo, para que la primera visita ya encuentre
-el esquema aplicado. Re-correr en cada despliegue que agregue una migración
-nueva (`/drizzle`).
+Random strings: use a password generator (your browser or password manager). Letters and numbers only, 40 or more characters. Each secret should be different.
 
-## 5. Verificación post-despliegue
+**Leave out:** `TEST_DATABASE_URL`, `ALLOW_DEV_FIXTURES`, `STORAGE_LOCAL_PATH` (photos go to `~/moto-uploads` by themselves) and the `SMTP_*` settings (not used).
 
-```
-curl -s https://<dominio> | grep -o 'name="robots"[^>]*'
-```
+## 4. Deploy
 
-Debe imprimir `name="robots" content="noindex"` mientras `SITE_NOINDEX=true`.
-Si no imprime nada, la variable no llegó al proceso del slot (revisar el
-panel, no el `.env` local).
+Click **Deploy**. On the first start the app:
 
-## Qué no se verificó en esta tarea
+1. creates all the tables,
+2. loads the catalog,
+3. creates your admin user from `ADMIN_EMAIL` / `ADMIN_PASSWORD`,
+4. creates the photos folder,
+5. starts the background jobs. These resend leads to the CRM every 5 minutes, expire old listings, end featured listings and clean up abandoned uploads. This replaces the cron jobs, so you don't need to set up any.
 
-Esta sesión no tiene credenciales de Hostinger ni acceso al dominio de
-producción. Lo que sí se verificó, contra un build de producción local
-(`npm run build && npm run start`) con MySQL local:
+Nothing is created twice when the app restarts.
 
-- El HTML servido contiene `<meta name="robots" content="noindex">` con
-  `SITE_NOINDEX=true`.
-- La página de inicio consulta la base real (cuenta de ciudades y marcas
-  activas cargadas por el seed de T-003) y la muestra — no hay datos
-  fabricados.
+## 5. Connect the domain
 
-**Pendiente, y debe verificarlo quien tenga acceso al panel de Hostinger:**
-el despliegue real al slot, `curl` contra el dominio de producción, y que las
-variables de entorno del panel coincidan con `.env.example`.
+1. Point moto.com.py at the app (hPanel → the app → Domains; if DNS is elsewhere, add the A/CNAME record Hostinger shows you). SSL is automatic.
+2. If you started with the temporary address, change `SITE_URL` to `https://moto.com.py` and **deploy again**. Some settings are fixed at build time.
+3. `www.moto.com.py` redirects to `moto.com.py` by itself.
+
+## 6. Check that it works (5 min)
+
+1. Open https://moto.com.py. The home page loads.
+2. Go to https://moto.com.py/admin/login and log in with your email and password.
+3. **Salud del sitio:** after 1–2 minutes, the jobs show "succeeded".
+4. **Configuración:** check that every variable shows "Cargada".
+5. Security: after your first login you can delete `ADMIN_PASSWORD` from hPanel. Nothing depends on it anymore.
+
+## 7. Get found on Google (10 min)
+
+1. **Publish the guides:** /admin/contenido → **Cargar borradores de content/guias**. For each guide:
+   - open it and read it,
+   - set **Estado: Publicada** and **Revisada por: you**,
+   - click **Guardar**.
+   10 guides are ready. Two ("Cómo transferir una moto" and "Qué papeles tiene que tener una moto") still have `[VERIFICAR]` facts to confirm and can't be published until they're fixed.
+2. **Google Search Console** (free): https://search.google.com/search-console
+   - Add the property `moto.com.py`.
+   - Verify it by DNS, or with the HTML tag: copy only the `content="…"` value into `GOOGLE_SITE_VERIFICATION` and deploy again.
+   - Under **Sitemaps**, submit `https://moto.com.py/sitemap.xml`.
+3. **Google Business Profile** (optional, free): helps with brand searches.
+
+Brand, city and type pages get into Google automatically once they have enough real listings and text (`SEO_ARCHITECTURE.md` §2.1). The admin's **Contenido → Textos de páginas** screen shows which pages are indexable and what's missing.
+
+## 8. After launch
+
+- **VenderCRM:** add the URL and key, deploy again, then send one real lead with your phone from /financiacion.
+- **Dealers:** import their stock at /admin/importar. Each dealer needs a written authorization.
+- **Legal:** a lawyer writes /terminos and /privacidad (they're placeholders marked `noindex` until then).
+
+## If something breaks
+
+- **"Application error" page:** in hPanel → the app → **Runtime logs**, look for lines starting with `boot:`. They say which step failed (database, migrations, admin).
+- **Database errors:** usually a wrong password in `DATABASE_URL`. Fix it in hPanel and deploy again (a restart isn't enough).
+- **To turn off the automatic setup or jobs:** `AUTO_SETUP=false` or `INTERNAL_CRON=false`. The old way still works: `POST /api/cron/<job>` with `Authorization: Bearer <CRON_SECRET>`.

@@ -37,7 +37,7 @@ export default async function Page() {
               <tr key={j.job} className={!j.last || j.last.status === "failed" ? "font-bold text-red-800" : ""}>
                 <td className="pr-4 font-mono">{j.job}</td>
                 <td className="pr-4">{ago(j.last?.startedAt ?? null)}</td>
-                <td className="pr-4">{j.last ? j.last.status : "nunca corrió (¿está el cron en hPanel?)"}</td>
+                <td className="pr-4">{j.last ? j.last.status : "nunca corrió (el programador interno arranca 1 min después del servidor)"}</td>
                 <td>{ago(j.lastSuccessAt)}</td>
               </tr>
             ))}
