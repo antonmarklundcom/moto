@@ -17,6 +17,12 @@ export async function publishedGuides() {
     .orderBy(desc(posts.publishedAt));
 }
 
+/** Slugs de las guías publicadas (para no enlazar borradores). */
+export const publishedGuideSlugs = cache(async (): Promise<Set<string>> => {
+  const rows = await db.select({ slug: posts.slug }).from(posts).where(PUBLISHED);
+  return new Set(rows.map((r) => r.slug));
+});
+
 export const publishedGuide = cache(async (slug: string) => {
   const [row] = await db.select().from(posts).where(and(PUBLISHED, eq(posts.slug, slug))).limit(1);
   return row ?? null;

@@ -49,3 +49,8 @@ Formato de cada entrada:
 - **B)** Sin columna: se acepta el riesgo y la respuesta a un robo de sesión es desactivar el usuario (`is_active = false`) y crear otro.
 **Recomendación:** A, porque el panel es donde está todo (leads, comercios, moderación) y el costo es mínimo.
 **Respuesta del propietario:**
+
+## 2026-09-23 · Propietario · Indexar el sitio desde el lanzamiento
+**Estado:** Respondida
+**Pregunta:** ¿`SITE_NOINDEX=true` hasta 150 publicaciones de ≥ 5 comercios (DATA_SEEDING §3), o indexar desde el día 1?
+**Respuesta del propietario:** indexar desde el lanzamiento ("make the site indexed so ppl can find it"). `DEPLOY.md` indica `SITE_NOINDEX=false`. La regla de umbral sigue en código (CLAUDE.md §3.4): marca, modelo, tipo, ciudad y cruces por debajo de §2.1 siguen `noindex` y fuera del sitemap. Se indexan desde el día 1: inicio, guías publicadas, estáticas y fichas publicadas. Pendiente recomendado: la auditoría previa (`docs/closing-report.md`).

@@ -22,11 +22,11 @@ describe("markdownToHtml", () => {
   });
 });
 
-describe("los 10 borradores de content/guias (CONTENT_STRATEGY §2.3)", () => {
+describe("los borradores de content/guias (CONTENT_STRATEGY §2.3)", () => {
   const files = readdirSync(DIR).filter((f) => f.endsWith(".md"));
 
-  it("son 10, con slug = nombre de archivo", () => {
-    expect(files).toHaveLength(10);
+  it("son al menos las 10 fundacionales, con slug = nombre de archivo", () => {
+    expect(files.length).toBeGreaterThanOrEqual(10);
     for (const f of files) expect(parseGuideFile(readFileSync(path.join(DIR, f), "utf8")).slug).toBe(f.replace(/\.md$/, ""));
   });
 
@@ -36,8 +36,8 @@ describe("los 10 borradores de content/guias (CONTENT_STRATEGY §2.3)", () => {
     expect(guide.metaDescription?.length ?? 0).toBeLessThanOrEqual(160);
     expect(guide.excerpt).toBeTruthy();
     expect(countWords(html)).toBeGreaterThan(400);
-    // Todo dato verificable queda marcado: son borradores, publicarlos exige resolverlos.
-    expect(html).toMatch(/\[VERIFICAR/);
+    // Cada enlace a otra guía apunta a una guía que existe (las no publicadas se muestran como texto).
+    for (const m of html.matchAll(/href="\/guias\/([a-z0-9-]+)"/g)) expect(files).toContain(`${m[1]}.md`);
     // Al menos dos listados enlazados (§2.2).
     expect((html.match(LISTING) ?? []).length).toBeGreaterThanOrEqual(2);
     expect(html).not.toMatch(/<h1|wa\.me|https?:\/\//);

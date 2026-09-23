@@ -8,7 +8,8 @@ import { env } from "@/lib/env";
 import { articleJsonLd } from "@/lib/seo/jsonld";
 import { contentPageMetadata } from "@/lib/seo/meta";
 import { absoluteUrl, paths } from "@/lib/seo/routes";
-import { longDatePy, publishedGuide } from "../data";
+import { longDatePy, publishedGuide, publishedGuideSlugs } from "../data";
+import { unlinkUnpublishedGuides } from "../links";
 
 // /guias/:slug (PRODUCT_SPEC §3.6): artículo, migas, enlaces a listados y CTA.
 export const dynamic = "force-dynamic";
@@ -47,6 +48,7 @@ export default async function Page({ params }: Props) {
   if (!validSlug(slug)) notFound();
   const post = await publishedGuide(slug);
   if (!post || !post.publishedAt) notFound();
+  const bodyHtml = unlinkUnpublishedGuides(post.bodyHtml ?? "", await publishedGuideSlugs());
   const siteUrl = env.siteUrl();
   const url = absoluteUrl(paths.guide(post.slug), siteUrl);
   return (
@@ -59,7 +61,7 @@ export default async function Page({ params }: Props) {
           <time dateTime={post.updatedAt.toISOString()}>{longDatePy(post.updatedAt)}</time>
         </p>
         {/* body_html se limpió al guardar (admin/contenido, allowlist) y lo revisó una persona (reviewed_by). */}
-        <div className={body} dangerouslySetInnerHTML={{ __html: post.bodyHtml ?? "" }} />
+        <div className={body} dangerouslySetInnerHTML={{ __html: bodyHtml }} />
       </article>
       <aside aria-label="Seguí buscando" className="mt-8 flex max-w-prose flex-wrap gap-2 border-t pt-4">
         <Link href={paths.motos} className={primaryButton}>

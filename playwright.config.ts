@@ -29,6 +29,8 @@ export default defineConfig({
     command: `npx next start -p ${PORT}`,
     url: `http://localhost:${PORT}`,
     reuseExistingServer: true,
+    // Los jobs automáticos no corren durante las pruebas (tocarían los datos de prueba).
+    env: { INTERNAL_CRON: "false" },
     timeout: 60_000,
   },
 });

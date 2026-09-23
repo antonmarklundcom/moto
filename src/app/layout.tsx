@@ -20,6 +20,8 @@ export function generateMetadata(): Metadata {
     description:
       "Motos nuevas y usadas en Paraguay, con precios en guaraníes y cuotas informadas por cada comercio.",
     ...(globalIndexingAllows("inventory") ? {} : { robots: { index: false, follow: true } }),
+    // Google Search Console: el código de verificación va en el panel, no en el repo.
+    ...(process.env.GOOGLE_SITE_VERIFICATION?.trim() ? { verification: { google: process.env.GOOGLE_SITE_VERIFICATION.trim() } } : {}),
   };
 }
 

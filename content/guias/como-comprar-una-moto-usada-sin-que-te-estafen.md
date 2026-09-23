@@ -30,7 +30,7 @@ La publicación tiene un precio que llama la atención y, cuando escribís, apar
 
 ### La moto robada
 
-Suele venir sin papeles, con precio bajo, apuro por cerrar y fotos malas. Fijate que los números de chasis y de motor grabados en la moto sean iguales a los de los papeles; si están limados, repintados o no coinciden, no sigas. Antes de firmar, pedí el informe del Registro sobre la moto. [VERIFICAR: si existe una consulta pública para saber si una moto tiene denuncia de robo y dónde se hace — fuente: Policía Nacional o Registro de Automotores]
+Suele venir sin papeles, con precio bajo, apuro por cerrar y fotos malas. Fijate que los números de chasis y de motor grabados en la moto sean iguales a los de los papeles; si están limados, repintados o no coinciden, no sigas. Antes de firmar, pedí el informe del Registro sobre la moto. Si tenés dudas sobre el origen de la moto, preguntá en la comisaría de tu zona cómo verificar si tiene denuncia de robo antes de pagar.
 
 ### Los papeles "en trámite"
 
@@ -55,14 +55,14 @@ Te ofrecen financiación y te piden foto de tu cédula, datos bancarios o un pag
 ## Cómo pagar
 
 1. **Nunca antes de ver la moto y los papeles.** Ni seña, ni reserva, ni "para el flete".
-2. **Pagá cuando se firma la compraventa,** no antes. El orden del trámite está en [cómo transferir una moto en Paraguay](/guias/como-transferir-una-moto-en-paraguay). [VERIFICAR: si para motos la compraventa se firma ante escribano o con firmas certificadas — fuente: Registro de Automotores o un escribano]
+2. **Pagá cuando se firma la compraventa,** no antes. El orden del trámite está en [cómo transferir una moto en Paraguay](/guias/como-transferir-una-moto-en-paraguay). Antes de ir, preguntale al escribano o al Registro qué documento hace falta para tu caso.
 3. **Que el pago quede registrado.** Si pagás por transferencia, que la cuenta esté a nombre del dueño que figura en los papeles; si es otro nombre, pará. En efectivo, nunca en la calle.
 4. **Pedí un recibo firmado** con los datos de la moto (chasis, motor y chapa) y guardá copia de todo.
 
 ## Si algo no te cierra
 
 - Si la moto está publicada en moto.com.py, usá el botón **Denunciar esta publicación** en la ficha. No le decimos al vendedor quién lo denunció.
-- Si ya perdiste plata, hacé la denuncia cuanto antes y llevá las capturas de los mensajes y los comprobantes de pago. [VERIFICAR: dónde se denuncia una estafa en Paraguay (comisaría, Fiscalía) y si se puede hacer en línea — fuente: Ministerio Público y Policía Nacional]
+- Si ya perdiste plata, hacé la denuncia cuanto antes y llevá las capturas de los mensajes y los comprobantes de pago. Podés empezar por la comisaría más cercana: ahí te dicen cómo sigue la denuncia.
 
 ## Seguí buscando
 

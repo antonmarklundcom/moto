@@ -19,7 +19,7 @@ import { DOCUMENTATION_LABEL } from "./rules";
 type Ok = Extract<ListingLoad, { status: "ok" }>;
 
 /** Ficha en el orden móvil de PRODUCT_SPEC.md §3.3. */
-export function DetailPage({ data, reportResult }: { data: Ok; reportResult: "ok" | "error" | null }) {
+export function DetailPage({ data, reportResult, safetyGuideHref = null }: { data: Ok; reportResult: "ok" | "error" | null; safetyGuideHref?: string | null }) {
   const { listing: l, state, similar, priceRange } = data;
   const siteUrl = env.siteUrl();
   const url = paths.listing(l);
@@ -122,6 +122,14 @@ export function DetailPage({ data, reportResult }: { data: Ok; reportResult: "ok
           <aside aria-label="Antes de pagar" className="rounded-lg border-l-4 border-blue-800 bg-blue-50 p-3 text-sm text-slate-900">
             <strong>Antes de pagar:</strong> vé la moto en persona, revisá que la documentación coincida con el vendedor, no
             transfieras dinero por adelantado y desconfiá de precios muy por debajo del mercado.
+            {safetyGuideHref ? (
+              <>
+                {" "}
+                <Link href={safetyGuideHref} className={linkClass}>
+                  Cómo comprar sin que te estafen
+                </Link>
+              </>
+            ) : null}
           </aside>
         </div>
       </div>

@@ -22,7 +22,7 @@ No reemplaza a un mecánico: si no te sentís seguro, llevá a alguien de un tal
 - Los papeles de la moto están a nombre de quien te la vende.
 - El nombre coincide con su cédula de identidad.
 - La habilitación municipal está al día.
-- No tiene prenda, embargo ni deudas pendientes. [VERIFICAR: cómo se consulta si una moto tiene prenda o embargo y cuánto cuesta el informe — fuente: Registro de Automotores]
+- No tiene prenda, embargo ni deudas pendientes. Eso se confirma con un informe del Registro de Automotores: preguntá en la oficina cómo pedirlo y cuánto cuesta hoy.
 
 Tenés el detalle en [qué papeles tiene que tener una moto al día](/guias/papeles-de-una-moto-al-dia) y en [cómo transferir una moto en Paraguay](/guias/como-transferir-una-moto-en-paraguay).
 
@@ -32,7 +32,7 @@ Tenés el detalle en [qué papeles tiene que tener una moto al día](/guias/pape
 - El número de motor grabado en el motor es igual al de los papeles.
 - Ninguno de los dos está limado, repintado, soldado o tapado con calcomanías.
 
-Si algo no coincide, no sigas, por más que el precio te guste. [VERIFICAR: en qué parte del cuadro y del motor suelen estar grabados los números en las marcas más comunes — fuente: manuales de fabricante o un comercio]
+Si algo no coincide, no sigas, por más que el precio te guste. Si no encontrás dónde están grabados los números, el manual de la moto o un taller de la marca te lo muestran.
 
 ## 3. Arranque en frío
 
@@ -57,13 +57,13 @@ Un motor que sólo arranca "si ya estaba caliente" merece una revisión en el ta
 - Los dientes de la corona no están puntiagudos ni torcidos.
 - Si tirás de la cadena hacia atrás en la corona y se separa mucho, está estirada.
 
-Si hay que cambiar el kit de arrastre, es un gasto que conviene descontar del precio. [VERIFICAR: costo de referencia de un kit de arrastre para motos de 125 a 200 cc — fuente: dos talleres o casas de repuestos]
+Si hay que cambiar el kit de arrastre, es un gasto que conviene descontar del precio. Pedí el precio en una casa de repuestos o en un taller antes de cerrar el trato.
 
 ## 6. Cubiertas
 
 - Les queda dibujo, parejo en todo el ancho.
 - No tienen grietas, cortes ni bultos en los costados.
-- Fijate la fecha de fabricación grabada en el costado: una cubierta vieja se endurece aunque tenga dibujo. [VERIFICAR: cómo se lee el código de fecha y a partir de qué antigüedad se recomienda cambiar una cubierta — fuente: fabricante de cubiertas]
+- Fijate la fecha de fabricación grabada en el costado: una cubierta vieja se endurece aunque tenga dibujo. Si no sabés leer esa fecha, en una gomería te la leen en un minuto y te dicen si conviene cambiarla.
 
 ## 7. Frenos
 
