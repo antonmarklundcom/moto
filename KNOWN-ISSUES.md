@@ -4,7 +4,7 @@ Promoted from the phase logs by C1 (2026-09-23). One line each, owner-facing. Fi
 
 ## Needs the owner
 - **Hostinger proxy and `X-Forwarded-For`.** Every per-IP limit reads the value the proxy adds (`TRUSTED_PROXY_HOPS=1`). Once deployed, check the chain with `curl -H "X-Forwarded-For: 1.2.3.4" https://moto.com.py/…` and read the logged IP. If Cloudflare goes in front, set `TRUSTED_PROXY_HOPS=2`.
-- **`SITE_NOINDEX`, `VENDERCRM_URL` and other env vars** are read when the app starts. Changing them in hPanel needs an app **restart**; public pages render per request, so no rebuild. `DEPLOY.md` should say so.
+- **Env vars and restarts/builds.** `SITE_NOINDEX` is read per request: change it in hPanel, then **restart** the app. `VENDERCRM_URL` also feeds the security headers (CSP), which are computed at **build**: set it before the build, and rebuild if it changes.
 - **`db:migrate` runs through `tsx` (a devDependency).** Either install devDependencies on Hostinger, or run migrations from your PC against Remote MySQL.
 - **Cron jobs (H-2).** Add in hPanel: `retry-leads` every 5 min, `purge-uploads` daily, `expire-featured` daily, and listing expiry daily. Each one is `curl -fsS -X POST -H "Authorization: Bearer <CRON_SECRET>" https://moto.com.py/api/cron/<job>`.
 - **`/terminos` and `/privacidad`** are placeholders marked `noindex`. The texts have to come from a lawyer (`LEGAL_AND_COMPLIANCE.md` §10).

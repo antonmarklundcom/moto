@@ -91,7 +91,15 @@ async function main() {
         : like(listings.title, `${DEV_TITLE_PREFIX}%`),
     );
   const oldIds = oldListings.map((l) => l.id);
+  // Los envíos al CRM cuelgan de los leads (FK): se borran antes que ellos.
+  const deleteLeadDeliveries = async (where: ReturnType<typeof inArray>) => {
+    const leadIds = (await db.select({ id: schema.leads.id }).from(schema.leads).where(where)).map((l) => l.id);
+    for (let i = 0; i < leadIds.length; i += 1000) {
+      await db.delete(schema.leadDeliveries).where(inArray(schema.leadDeliveries.leadId, leadIds.slice(i, i + 1000)));
+    }
+  };
   if (oldIds.length) {
+    await deleteLeadDeliveries(inArray(schema.leads.listingId, oldIds));
     for (const table of [
       schema.listingEvents,
       schema.reports,
@@ -106,6 +114,7 @@ async function main() {
     await db.delete(listings).where(inArray(listings.id, oldIds));
   }
   if (devDealerIds.length) {
+    await deleteLeadDeliveries(inArray(schema.leads.dealerId, devDealerIds));
     await db.delete(schema.leads).where(inArray(schema.leads.dealerId, devDealerIds));
     await db.delete(schema.listingEvents).where(inArray(schema.listingEvents.dealerId, devDealerIds));
     await db.delete(schema.dealerPlans).where(inArray(schema.dealerPlans.dealerId, devDealerIds));
