@@ -7,6 +7,7 @@ import { LeadForm } from "@/components/lead-forms/lead-form";
 import { Breadcrumbs } from "@/components/public/breadcrumbs";
 import { container, linkClass } from "@/components/public/styles";
 import { groupThousands } from "@/lib/format";
+import { readFormFlash } from "@/lib/leads/form-flash";
 import { THANKS_PATH } from "@/lib/leads/handler";
 import { contentPageMetadata } from "@/lib/seo/meta";
 import { paths } from "@/lib/seo/routes";
@@ -19,6 +20,8 @@ export function generateMetadata(): Metadata {
 
 export default async function Page({ searchParams }: { searchParams: Promise<{ error?: string }> }) {
   const q = await searchParams;
+  // Sin JS, un error devuelve lo escrito en una cookie cifrada de 5 min (nunca en la URL).
+  const returned = q.error ? await readFormFlash("dealer_plan") : {};
   const list = await activeDealers();
   const anyVerified = list.some((d) => d.isVerified);
   return (
@@ -50,7 +53,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ e
         </h2>
         <p className="mt-1">{dealerCopy.pitch}</p>
         <div className="mt-3">
-          <LeadForm type="dealer_plan" pagePath={paths.dealers} notice={null} initialErrors={errorsFromQuery(q.error)} thanksPath={`${THANKS_PATH}?tipo=plan_comercio`} />
+          <LeadForm type="dealer_plan" pagePath={paths.dealers} notice={null} defaults={returned} initialErrors={errorsFromQuery(q.error)} thanksPath={`${THANKS_PATH}?tipo=plan_comercio`} />
         </div>
       </section>
     </div>

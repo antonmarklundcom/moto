@@ -6,6 +6,7 @@ import { listingInterest } from "@/components/lead-forms/listing-interest";
 import { Breadcrumbs } from "@/components/public/breadcrumbs";
 import { container, linkClass } from "@/components/public/styles";
 import { LEAD_NOTICE } from "@/lib/leads/consent";
+import { readFormFlash } from "@/lib/leads/form-flash";
 import { THANKS_PATH } from "@/lib/leads/handler";
 import { contentPageMetadata } from "@/lib/seo/meta";
 import { paths } from "@/lib/seo/routes";
@@ -25,6 +26,8 @@ type Props = { searchParams: Promise<{ aviso?: string; error?: string }> };
 
 export default async function Page({ searchParams }: Props) {
   const q = await searchParams;
+  // Sin JS, un error devuelve lo escrito en una cookie cifrada de 5 min (nunca en la URL).
+  const returned = q.error ? await readFormFlash("financing") : {};
   const interest = await listingInterest(q.aviso);
   return (
     <div className={container}>
@@ -46,7 +49,7 @@ export default async function Page({ searchParams }: Props) {
               pagePath={paths.financing}
               notice={LEAD_NOTICE.financing!.text}
               listingRef={interest?.ref ?? null}
-              defaults={interest ? { moto_interes: interest.title } : {}}
+              defaults={{ ...(interest ? { moto_interes: interest.title } : {}), ...returned }}
               initialErrors={errorsFromQuery(q.error)}
               thanksPath={`${THANKS_PATH}?tipo=financiacion`}
             />

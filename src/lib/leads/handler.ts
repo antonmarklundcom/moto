@@ -16,6 +16,7 @@ import { STATIC_PATHS } from "@/lib/seo/routes";
 import { clientIp, RateLimiter } from "@/lib/rate-limit";
 import { ATTRIBUTION_COOKIE, readAttribution } from "./attribution";
 import { deliverLead } from "./deliver";
+import { formFlashCookie } from "./form-flash";
 import { jsonResponse, ownRefererPath, sameOriginOrAbsent, seeOther } from "./http";
 import { leadLog } from "./log";
 import { saveLead } from "./save";
@@ -112,7 +113,7 @@ export async function handleLeadPost(request: Request, schedule: Schedule): Prom
     leadLog("warn", "leads: límite por IP", {});
     return json
       ? jsonResponse(429, { ok: false, error: LEAD_MESSAGES.limite }, { "Retry-After": "600" })
-      : seeOther(withError(backTo, "limite"));
+      : seeOther(withError(backTo, "limite"), await formFlashCookie(tipo, fields));
   }
 
   // Honeypot (§2.7 regla 4): como si hubiera salido bien, sin guardar nada.
@@ -125,7 +126,7 @@ export async function handleLeadPost(request: Request, schedule: Schedule): Prom
   if (!validation.ok) {
     return json
       ? jsonResponse(422, { ok: false, errors: validation.errors })
-      : seeOther(withError(backTo, Object.keys(validation.errors)[0]));
+      : seeOther(withError(backTo, Object.keys(validation.errors)[0]), await formFlashCookie(tipo, fields));
   }
   const sub = validation.value;
   const pagePath = sub.pagePath ?? ownRefererPath(headers);
@@ -145,7 +146,7 @@ export async function handleLeadPost(request: Request, schedule: Schedule): Prom
       type: sub.type,
       error: error instanceof Error ? error.message : String(error),
     });
-    return json ? jsonResponse(503, { ok: false, error: LEAD_MESSAGES.servidor }) : seeOther(withError(backTo, "servidor"));
+    return json ? jsonResponse(503, { ok: false, error: LEAD_MESSAGES.servidor }) : seeOther(withError(backTo, "servidor"), await formFlashCookie(tipo, fields));
   }
 
   if (!saved.duplicate) {

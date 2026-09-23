@@ -3,6 +3,7 @@ import { errorsFromQuery } from "@/components/lead-forms/errors";
 import { LeadForm } from "@/components/lead-forms/lead-form";
 import { Breadcrumbs } from "@/components/public/breadcrumbs";
 import { container, linkClass, primaryButton } from "@/components/public/styles";
+import { readFormFlash } from "@/lib/leads/form-flash";
 import { THANKS_PATH } from "@/lib/leads/handler";
 import { contentPageMetadata } from "@/lib/seo/meta";
 import { paths } from "@/lib/seo/routes";
@@ -19,6 +20,8 @@ export function generateMetadata(): Metadata {
 
 export default async function Page({ searchParams }: { searchParams: Promise<{ error?: string }> }) {
   const q = await searchParams;
+  // Sin JS, un error devuelve lo escrito en una cookie cifrada de 5 min (nunca en la URL).
+  const returned = q.error ? await readFormFlash("advertising") : {};
   return (
     <div className={container}>
       <Breadcrumbs items={[{ name: "Contacto", href: paths.contact }]} />
@@ -47,7 +50,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ e
         </h2>
         <p className="mt-1 max-w-prose">Si tenés un taller, una casa de repuestos o una empresa que le sirve a quien anda en moto, dejanos tus datos.</p>
         <div className="mt-3">
-          <LeadForm type="advertising" pagePath={paths.contact} notice={null} initialErrors={errorsFromQuery(q.error)} thanksPath={`${THANKS_PATH}?tipo=publicidad`} />
+          <LeadForm type="advertising" pagePath={paths.contact} notice={null} defaults={returned} initialErrors={errorsFromQuery(q.error)} thanksPath={`${THANKS_PATH}?tipo=publicidad`} />
         </div>
       </section>
     </div>

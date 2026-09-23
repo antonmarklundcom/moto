@@ -16,7 +16,6 @@ Promoted from the phase logs by C1 (2026-09-23). One line each, owner-facing. Fi
 - The client can pick its own draft token (≥ 32 chars). Impact is tiny; switch to server-issued tokens when touching uploads again.
 - Anyone can lock the owner's account for 15 min with 5 bad passwords. Recover with `npm run create-admin -- --reset`.
 - `/api/telefono` and `/api/leads` compare `Origin` with `SITE_URL`, so they fail if the site runs on another host or port (staging with a wrong `SITE_URL`). Keep `SITE_URL` exact per slot.
-- The no-JS lead form keeps the error but loses the typed values after a validation error.
 - The model selector on `/motos` without JS doesn't update when the brand changes.
 - There is no photo editing (upload/reorder/delete) in the admin.
 - There is no expiry reminder to private sellers. `/como-funciona` doesn't promise one.

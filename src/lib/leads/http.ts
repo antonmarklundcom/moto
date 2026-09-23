@@ -37,6 +37,8 @@ export function jsonResponse(status: number, body: Record<string, unknown>, extr
 }
 
 /** 303 a una ruta del sitio (URL absoluta con SITE_URL, no la del proxy). */
-export function seeOther(path: string): Response {
-  return new Response(null, { status: 303, headers: { ...NO_STORE_HEADERS, Location: new URL(path, env.siteUrl()).toString() } });
+export function seeOther(path: string, setCookie?: string | null): Response {
+  const headers = new Headers({ ...NO_STORE_HEADERS, Location: new URL(path, env.siteUrl()).toString() });
+  if (setCookie) headers.append("Set-Cookie", setCookie);
+  return new Response(null, { status: 303, headers });
 }
