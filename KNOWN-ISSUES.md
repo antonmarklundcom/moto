@@ -17,7 +17,7 @@ Promoted from the phase logs by C1 (2026-09-23). One line each, owner-facing. Fi
 - Anyone can lock the owner's account for 15 min with 5 bad passwords. Recover with `npm run create-admin -- --reset`.
 - `/api/telefono` and `/api/leads` compare `Origin` with `SITE_URL`, so they fail if the site runs on another host or port (staging with a wrong `SITE_URL`). Keep `SITE_URL` exact per slot.
 - The model selector on `/motos` without JS doesn't update when the brand changes.
-- There is no photo editing (upload/reorder/delete) in the admin.
+- The admin can delete, reorder and pick the cover photo, but not upload new photos. Photos come from /publicar, /mi-aviso or /admin/importar.
 - There is no expiry reminder to private sellers. `/como-funciona` doesn't promise one.
 - Duplicate-photo detection always fires with local fixtures, because they share placeholder images. This does not affect real data.
 - `topFinancedModels` and the moderation-queue signals are computed on every request. Cache them when volume grows.
