@@ -7,7 +7,7 @@ Everything technical runs by itself on the first start: tables, the catalog (bra
 ## 1. Create the database (5 min)
 
 1. hPanel → **Databases → MySQL Databases**.
-2. Create a database, a user and a password. **Use a password with only letters and numbers** (no `@ : / # ?`), or the connection string breaks.
+2. Create a database, a user and a password. **Use a password with only letters and numbers** (no `@ : / # ? ! %`), or the connection string breaks. If it already has symbols, write them encoded in `DATABASE_URL`: `!` → `%21`, `@` → `%40`, `#` → `%23`, `?` → `%3F`, `/` → `%2F`, `:` → `%3A`, `%` → `%25`.
 3. Write down three things: database name, user, password. The host is `localhost` (the app runs on the same server).
 
 You don't need Remote MySQL. It's only for connecting from your own PC, which is no longer necessary.
@@ -64,11 +64,12 @@ Nothing is created twice when the app restarts.
 
 ## 6. Check that it works (5 min)
 
-1. Open https://moto.com.py. The home page loads.
-2. Go to https://moto.com.py/admin/login and log in with your email and password.
-3. **Salud del sitio:** after 1–2 minutes, the jobs show "succeeded".
-4. **Configuración:** check that every variable shows "Cargada".
-5. Security: after your first login you can delete `ADMIN_PASSWORD` from hPanel. Nothing depends on it anymore.
+1. Open **https://moto.com.py/api/health**. It should say `"ok": true`. If not, it says what's wrong in plain words (see "If something breaks").
+2. Open https://moto.com.py. The home page loads.
+3. Go to https://moto.com.py/admin/login and log in with your email and password.
+4. **Salud del sitio:** after 1–2 minutes, the jobs show "succeeded".
+5. **Configuración:** check that every variable shows "Cargada".
+6. Security: after your first login you can delete `ADMIN_PASSWORD` from hPanel. Nothing depends on it anymore.
 
 ## 7. Get found on Google (10 min)
 
@@ -93,7 +94,12 @@ Brand, city and type pages get into Google automatically once they have enough r
 
 ## If something breaks
 
-- **"Application error" page:** in hPanel → the app → **Runtime logs**, look for lines starting with `boot:`. They say which step failed (database, migrations, admin).
+- **"Algo salió mal" / "Application error" page:** open **https://moto.com.py/api/health** first. It shows, without any passwords:
+  - `database.ok` and, if false, a `code` and a `hint` with what to fix. `ER_ACCESS_DENIED_ERROR` = wrong user or password in `DATABASE_URL`; `ER_BAD_DB_ERROR` = wrong database name; `ECONNREFUSED` = wrong host (use `localhost`).
+  - `boot.steps`: each setup step (migrations, catalog, admin) with `ok: true/false`. If the database wasn't ready, the app retries by itself (30 s, 1 min, 2 min… up to every 10 min). You don't need to redeploy for that.
+  - `env`: which variables are set and look valid (`true`/`false`, never the values).
+  More detail: hPanel → the app → **Runtime logs**, lines starting with `boot:`.
+- **Tables, migrations and the guide texts are built into the app.** They don't depend on which folders Hostinger copies to the server.
 - **Database errors:** usually a wrong password in `DATABASE_URL`. Fix it in hPanel and deploy again (a restart isn't enough).
 - **Forgot the admin password, or the account is locked:** a lock lifts by itself after 15 minutes. To set a new password:
   1. In hPanel, set `ADMIN_EMAIL` (your email), `ADMIN_PASSWORD` (the new password) and `ADMIN_PASSWORD_RESET=true`.
