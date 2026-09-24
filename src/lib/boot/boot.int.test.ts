@@ -1,8 +1,9 @@
 import { mkdtemp, rm, stat } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { migrate } from "drizzle-orm/mysql2/migrator";
+import { migrateEmbedded } from "@/db/migrate-embedded";
 import { afterAll, describe, expect, it } from "vitest";
 import { db } from "@/db";
 import { users } from "@/db/schema";
@@ -25,6 +26,12 @@ describe("arranque automático", () => {
 
   it("las migraciones se pueden volver a correr (idempotentes)", async () => {
     await expect(migrate(db, { migrationsFolder: path.join(process.cwd(), "drizzle") })).resolves.toBeUndefined();
+  });
+
+  it("las migraciones embebidas (las del arranque) también, sobre la misma tabla", async () => {
+    await expect(migrateEmbedded(db)).resolves.toEqual({ migrations: expect.any(Number) });
+    const [[rows]] = (await db.execute(sql`SELECT COUNT(*) AS n FROM __drizzle_migrations`)) as unknown as [[{ n: number }]];
+    expect(Number(rows.n)).toBeGreaterThanOrEqual(1);
   });
 
   it("crea la carpeta de fotos (por defecto o la indicada)", async () => {

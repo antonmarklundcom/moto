@@ -16,6 +16,7 @@ import { groupLiveCounts, type CountDimension } from "@/lib/listings/query";
 import { countWords, type ProgrammaticPageType } from "@/lib/seo/indexability";
 import { paths } from "@/lib/seo/routes";
 import { isReservedSlug, slugify } from "@/lib/slug";
+import { CONTENT_FILES } from "@/generated/embedded";
 import { introIndicator, type IntroIndicator } from "./indicator";
 import { markdownToHtml, parseGuideFile } from "./markdown";
 import { hasPendingVerification, sanitizeHtml } from "./sanitize";
@@ -134,16 +135,28 @@ export async function savePost(user: SessionUser, input: PostInput, now: Date = 
   return { ok: true, id, status };
 }
 
+/** Guías en disco; si la carpeta no está (Hostinger despliega sólo el build), la copia embebida. */
+async function guideFiles(dir: string): Promise<Array<{ file: string; read: () => Promise<string> }>> {
+  try {
+    const files = (await readdir(dir)).filter((f) => f.endsWith(".md")).sort();
+    return files.map((file) => ({ file, read: () => readFile(path.join(dir, file), "utf8") }));
+  } catch {
+    return Object.keys(CONTENT_FILES)
+      .filter((k) => k.startsWith("guias/"))
+      .sort()
+      .map((k) => ({ file: k.slice("guias/".length), read: async () => CONTENT_FILES[k] }));
+  }
+}
+
 /**
  * Carga los borradores de `content/guias/*.md` como `posts` en `draft`. Nunca
  * pisa una guía que ya existe (con el mismo slug): las ediciones del admin mandan.
  */
 export async function loadGuideDrafts(user: SessionUser, dir: string = GUIDES_DIR): Promise<{ created: string[]; skipped: string[]; failed: string[] }> {
-  const files = (await readdir(dir)).filter((f) => f.endsWith(".md")).sort();
   const result = { created: [] as string[], skipped: [] as string[], failed: [] as string[] };
-  for (const file of files) {
+  for (const { file, read } of await guideFiles(dir)) {
     try {
-      const guide = parseGuideFile(await readFile(path.join(dir, file), "utf8"));
+      const guide = parseGuideFile(await read());
       const [exists] = await db.select({ id: posts.id }).from(posts).where(eq(posts.slug, guide.slug));
       if (exists) {
         result.skipped.push(guide.slug);

@@ -10,6 +10,7 @@ import "server-only";
 
 import { readFileSync } from "node:fs";
 import path from "node:path";
+import { CONTENT_FILES } from "@/generated/embedded";
 import { markdownToHtml } from "@/app/admin/contenido/_lib/markdown";
 import { hasPendingVerification } from "@/app/admin/contenido/_lib/sanitize";
 import { countWords } from "./indexability";
@@ -54,12 +55,14 @@ const memo = new Map<string, EditorialText | null>();
 export function editorialText(key: string): EditorialText | null {
   if (!KEY.test(key)) return null;
   if (memo.has(key)) return memo.get(key)!;
-  let result: EditorialText | null = null;
+  let source: string | undefined;
   try {
-    result = editorialFromFile(parseEditorialFile(readFileSync(path.join(process.cwd(), "content", "seo", `${key}.md`), "utf8")));
+    source = readFileSync(path.join(process.cwd(), "content", "seo", `${key}.md`), "utf8");
   } catch {
-    result = null; // sin archivo = sin texto
+    // En Hostinger /content puede no estar junto al build: copia embebida en el bundle.
+    source = Object.hasOwn(CONTENT_FILES, `seo/${key}.md`) ? CONTENT_FILES[`seo/${key}.md`] : undefined;
   }
+  const result = source === undefined ? null : editorialFromFile(parseEditorialFile(source)); // sin archivo = sin texto
   if (process.env.NODE_ENV === "production") memo.set(key, result);
   return result;
 }
