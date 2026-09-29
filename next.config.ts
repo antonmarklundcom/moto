@@ -6,6 +6,11 @@ import { securityHeaders } from "./src/lib/security-headers";
 // el entorno del build para que la CSP permita vc-attribution.js (DECISIONS.md ADR-26).
 const nextConfig: NextConfig = {
   poweredByHeader: false,
+  // Next arranca por defecto os.cpus().length - 1 workers de build, y en el hosting
+  // compartido de Hostinger eso son los núcleos de la máquina, no la cuota de la
+  // cuenta. Cada worker es un proceso Node contra el tope de 200 "Max Processes"
+  // que comparten todas las apps de la cuenta.
+  experimental: { cpus: 1 },
   // Un solo host: la variante con/sin "www" redirige a SITE_URL (SEO y Origin de los leads).
   async redirects() {
     const host = otherWwwHost(process.env.SITE_URL);
