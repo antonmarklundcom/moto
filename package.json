@@ -29,11 +29,11 @@
     "drizzle-orm": "^0.45.2",
     "iron-session": "^8.0.4",
     "mysql2": "^3.23.2",
-    "next": "15.5.22",
+    "next": "15.5.28",
     "react": "19.1.0",
     "react-dom": "19.1.0",
     "server-only": "^0.0.1",
-    "sharp": "^0.35.4"
+    "sharp": "^0.35.5"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
@@ -46,11 +46,14 @@
     "dotenv": "^17.4.2",
     "drizzle-kit": "^0.31.10",
     "eslint": "^9",
-    "eslint-config-next": "15.5.22",
+    "eslint-config-next": "15.5.28",
     "husky": "^9.1.7",
     "tailwindcss": "^4",
     "tsx": "^4.23.5",
     "typescript": "^5",
     "vitest": "^4.1.10"
+  },
+  "overrides": {
+    "sharp": "$sharp"
   }
 }
